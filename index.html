@@ -8763,19 +8763,11 @@ document.getElementById('confirmRestoreDemo')?.addEventListener('click',()=>{doc
          todayDay=new Date(today.getFullYear(),today.getMonth(),today.getDate(),12),
          viewingCurrentMonth=y===today.getFullYear()&&m===today.getMonth();
 
-   // O painel de ciclo representa o ciclo vigente. Se a fatura do mês atual
-   // já venceu, avança para a próxima fatura sem alterar o mês consultado
-   // nos demais blocos do módulo.
+   // O ciclo acompanha sempre o mês da fatura selecionada.
+   // Ex.: Setembro = início em agosto, fecha e vence em setembro.
+   // Não avançamos automaticamente após o vencimento; a navegação mensal
+   // é a referência única e evita dois ciclos exibidos como Outubro.
    let displayY=y,displayM=m,c=selectedCard,z=cycle(c,displayY,displayM),rolled=false;
-
-   if(viewingCurrentMonth && todayDay>z.due){
-     const total=displayY*12+displayM+1;
-     displayY=Math.floor(total/12);
-     displayM=((total%12)+12)%12;
-     c=cardConfigForCycleV383(rawCard||selectedCard,displayY,displayM);
-     z=cycle(c,displayY,displayM);
-     rolled=true;
-   }
 
    const span=Math.max(1,z.due-z.start),
          pct=d=>Math.max(0,Math.min(100,(d-z.start)/span*100)),
@@ -8795,9 +8787,7 @@ document.getElementById('confirmRestoreDemo')?.addEventListener('click',()=>{doc
      cycleState=todayDay>z.due?'Ciclo encerrado':'Ciclo futuro';
    }
 
-   const rolledNote=rolled
-     ?`<span class="cycle-current-note-v383">Ciclo vigente · a fatura de ${MON[m]}/${y} venceu em ${pad(selectedCard.dueNow)}/${pad(m+1)}</span>`
-     :'';
+   const rolledNote='';
 
    p.innerHTML=`<button class="cycle-month-nav-v467 prev" id="cycleMonthPrevV467" type="button" aria-label="Fatura anterior" title="Fatura anterior">‹</button><div class="cycle-v2-head"><div><h2>Ciclo da fatura · ${c.name} · ${MON[displayM]}/${displayY}</h2><div class="muted" style="font-size:10px;margin-top:3px">${cycleState}</div>${rolledNote}</div><button class="cycle-info" id="cycleInfoBtn">i<div class="cycle-info-pop"><h4>Entenda este ciclo</h4><div><span>Início</span><b>${fmt(z.start)}</b></div><div><span>Fechamento</span><b>${fmt(z.close)}</b></div><div><span>Melhor dia</span><b>${fmt(z.best)}</b></div><div><span>Vencimento</span><b>${fmt(z.due)}</b></div><p>Amarelo: período em que a fatura recebe compras. Verde: fatura fechada até o vencimento. Compras após ${fmt(z.close)} entram em ${MON[nextM]}/${nextY}.</p></div></button></div><button class="cycle-month-nav-v467 next" id="cycleMonthNextV467" type="button" aria-label="Próxima fatura" title="Próxima fatura">›</button><div class="cycle-v2-track"><div class="cycle-v2-line"><span class="cycle-v2-yellow" style="width:${closePct}%"></span><span class="cycle-v2-green" style="left:${closePct}%"></span></div><i class="cycle-v2-point" style="left:0%"></i><i class="cycle-v2-point close" style="left:${closePct}%"></i>${todayIn?`<span class="cycle-today-tag" style="left:${pct(todayDay)}%">HOJE</span><i class="cycle-v2-point today" style="left:${pct(todayDay)}%"></i>`:''}<i class="cycle-v2-point due" style="left:100%"></i></div><div class="cycle-v2-labels"><div style="left:0%"><b>${fmt(z.start)}</b>início</div><div style="left:${closePct}%"><b>${fmt(z.close)}</b>fecha</div><div style="left:100%"><b>${fmt(z.due)}</b>vence</div></div>`;
    document.getElementById('cycleInfoBtn')?.addEventListener('click',e=>{e.stopPropagation();e.currentTarget.classList.toggle('active')});
@@ -24496,7 +24486,7 @@ body.ns-density-comfortable .favorite-row{
 @media(max-width:760px){#newModal .form-grid{column-gap:10px!important;}}
 </style>
 <script id="novasol-v477-version-script">
-(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/v1\.476 CLEAN/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/v1\.476 CLEAN[^\n]*/,'NovaSol v1.0 · Build 480');}};f();document.addEventListener('DOMContentLoaded',f);setTimeout(f,250);})();
+(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/v1\.476 CLEAN/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/v1\.476 CLEAN[^\n]*/,'NovaSol v1.0 · Build 481');}};f();document.addEventListener('DOMContentLoaded',f);setTimeout(f,250);})();
 </script>
 
 <script id="novasol-release-sw">
