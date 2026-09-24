@@ -1,7 +1,8 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<!-- NovaSol v1.0 / build 480 — infraestrutura de publicação -->
+
+<!-- NovaSol v1.0 / Build 480 — release de produção -->
 <meta name="theme-color" content="#081a2a">
 <meta name="application-name" content="NovaSol">
 <link rel="manifest" href="./manifest.json">
@@ -8090,14 +8091,6 @@ document.getElementById('confirmRestoreDemo')?.addEventListener('click',()=>{doc
 @media(max-width:680px){#health.content{padding-top:18px;padding-bottom:18px}#health .health-head{align-items:flex-start;flex-direction:column}#health .health-period{width:100%;justify-content:center}#health .health-kpis,#health .health-actions,#health .decision-summary-v153{grid-template-columns:1fr}#health .health-priority{grid-template-columns:30px 1fr}#health .health-priority .tag{grid-column:2;justify-self:start}#health .decision-head-v153{flex-direction:column;gap:8px}#health .decision-demand-v153 .top{flex-direction:column;gap:4px}#health .decision-demand-v153 .top em{white-space:normal}}
 </style>
 
-
-<script id="novasol-release-sw">
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('./service-worker.js').catch(function () {});
-  });
-}
-</script>
 </body></html>`;
    statementModal?.classList.remove('open');
    document.getElementById('novasolPrintFrame')?.remove();
@@ -9376,7 +9369,13 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     // Só agora libera qualquer gravação. Até aqui todos os saves do boot são ignorados.
     if(window.__novasolPersistenceV225) window.__novasolPersistenceV225.hydrating=false;
 
-    if(restored) safeRenderAfterRestore();
+    if(restored){
+      safeRenderAfterRestore();
+    }else{
+      // Release de produção: primeiro uso começa sem as movimentações demonstrativas do protótipo.
+      try{ novaSolPrepareMovementRestore(); }catch(e){ console.warn('NovaSol: limpeza inicial falhou',e); }
+      safeRenderAfterRestore();
+    }
 
     // Uma única normalização após a hidratação.
     try{saveNovaSolState()}catch(e){console.warn('NovaSol: normalização inicial falhou',e)}
@@ -24497,6 +24496,15 @@ body.ns-density-comfortable .favorite-row{
 @media(max-width:760px){#newModal .form-grid{column-gap:10px!important;}}
 </style>
 <script id="novasol-v477-version-script">
-(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/v1\.476 CLEAN/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/v1\.476 CLEAN[^\n]*/,'v1.480 CLEAN · Holerite com rodapé no padrão');}};f();document.addEventListener('DOMContentLoaded',f);setTimeout(f,250);})();
+(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/v1\.476 CLEAN/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/v1\.476 CLEAN[^\n]*/,'NovaSol v1.0 · Build 480');}};f();document.addEventListener('DOMContentLoaded',f);setTimeout(f,250);})();
 </script>
+
+<script id="novasol-release-sw">
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./service-worker.js').catch(function () {});
+  });
+}
+</script>
+
 </body></html>

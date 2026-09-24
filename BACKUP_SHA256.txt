@@ -1,3 +1,3 @@
-NovaSol v480 — backup de segurança
+Backup exato da v480 aprovada
 Arquivo: _backup/NovaSol-v480-CLEAN-holerite-rodape-padrao.html
 SHA-256: 4e2f8d2f7a0493555608ea72264f1dad22e6b7fa0c974b91296b0e594c6d2fed

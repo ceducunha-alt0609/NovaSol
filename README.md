@@ -1,23 +1,22 @@
 # NovaSol
 
-**Versão operacional: 1.0 / build 480**
+**Release: NovaSol v1.0 · Build 480**
 
-Pacote de publicação preparado a partir da versão aprovada
-`NovaSol-v480-CLEAN-holerite-rodape-padrao.html`.
+Pacote de produção preparado a partir da v480 aprovada.
 
-## Publicação
+## Publicar no GitHub
 Envie para a raiz do repositório:
 - `index.html`
 - `manifest.json`
 - `service-worker.js`
-- pasta `icons/`
+- `icons/`
 
-No GitHub Pages: **Settings → Pages → Deploy from a branch → main / root**.
+A pasta `_backup/` é apenas a cópia de segurança da versão-fonte e não precisa ser publicada.
 
-## Segurança
-A pasta `_backup/` contém uma cópia exata da v480 aprovada.
-`BACKUP_SHA256.txt` registra o SHA-256 dessa cópia.
+## Primeiro uso
+Sem estado salvo, o NovaSol inicia sem as movimentações demonstrativas do protótipo.
+Cadastre sua estrutura real e mantenha os backups financeiros fora do repositório.
 
-## Dados reais
-Os dados financeiros ficam no armazenamento local do navegador e nos backups
-exportados pelo próprio NovaSol. Não envie backups com dados pessoais ao repositório.
+## Atualização
+Após substituir os arquivos no GitHub Pages, faça uma atualização forçada no navegador
+(Ctrl+F5) para evitar que uma cópia anterior permaneça em cache.
