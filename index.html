@@ -9574,16 +9574,33 @@ document.getElementById('confirmRestoreDemo')?.addEventListener('click',()=>{doc
 </script>
 
 <div class="modal" id="accountsMonthModalV345">
-  <div class="modal-card mov-month-card">
-    <div class="mov-month-year">
-      <button class="mov-year-btn" id="accountsPickerPrevYearV345" type="button">‹</button>
-      <strong id="accountsPickerYearV345">2026</strong>
-      <button class="mov-year-btn" id="accountsPickerNextYearV345" type="button">›</button>
+  <div class="modal-card accounts-period-card-v489">
+    <div class="accounts-period-head-v489"><div><h3>Período do extrato</h3><div class="muted">Escolha o intervalo e como os lançamentos serão exibidos.</div></div><button class="x" type="button" data-accounts-period-close-v489>×</button></div>
+    <div class="accounts-period-label-v489">PERÍODO</div>
+    <div class="accounts-period-presets-v489">
+      <button type="button" data-accounts-preset-v489="month">Mês atual</button><button type="button" data-accounts-preset-v489="15">15 dias</button><button type="button" data-accounts-preset-v489="30">30 dias</button>
+      <button type="button" data-accounts-preset-v489="60">60 dias</button><button type="button" data-accounts-preset-v489="90">90 dias</button><button type="button" data-accounts-preset-v489="custom" class="active">Personalizado</button>
     </div>
-    <div class="mov-month-grid" id="accountsMonthGridV345"></div>
-    <button class="mov-month-close" type="button" data-accounts-month-close-v345>Fechar</button>
+    <div class="accounts-period-dates-v489"><label>De<input type="date" id="accountsRangeStartV489"></label><label>Até<input type="date" id="accountsRangeEndV489"></label></div>
+    <div class="accounts-period-preview-v489" id="accountsRangePreviewV489">—</div>
+    <div class="accounts-period-label-v489">VISUALIZAÇÃO</div>
+    <div class="accounts-order-v489"><button type="button" data-accounts-order-v489="desc"><b>Mais recentes primeiro</b><span>Do lançamento mais novo para o mais antigo.</span></button><button type="button" data-accounts-order-v489="asc" class="active"><b>Mais antigos primeiro</b><span>Leitura cronológica do início ao fim do período.</span></button></div>
+    <div class="accounts-period-actions-v489"><button type="button" class="soft-btn" data-accounts-period-close-v489>Cancelar</button><button type="button" class="act" id="accountsRangeApplyV489">Aplicar</button></div>
   </div>
 </div>
+<style id="novasol-v489-accounts-period">
+#accountsMonthModalV345{align-items:center!important;justify-content:center!important;background:rgba(0,0,0,.62)!important;padding:18px!important;pointer-events:none}
+#accountsMonthModalV345.open{pointer-events:auto}
+.accounts-period-card-v489{width:min(500px,94vw)!important;padding:18px!important}
+.accounts-period-head-v489{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding-bottom:13px;border-bottom:1px solid #284158}.accounts-period-head-v489 h3{margin:0 0 3px;font-size:18px}
+.accounts-period-label-v489{font-size:9px;font-weight:800;letter-spacing:.08em;color:#8eabc2;margin:14px 0 8px}
+.accounts-period-presets-v489{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.accounts-period-presets-v489 button,.accounts-order-v489 button{border:1px solid #31516b;background:#0d2234;color:#d8e8f5;border-radius:9px;padding:10px;cursor:pointer}.accounts-period-presets-v489 button.active,.accounts-order-v489 button.active{border-color:#4a98ff;background:#176fc9;color:#fff}
+.accounts-period-dates-v489{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.accounts-period-dates-v489 label{font-size:10px;color:#9ab4c9}.accounts-period-dates-v489 input{display:block;width:100%;box-sizing:border-box;margin-top:5px;border:1px solid #31516b;background:#0d2234;color:#fff;border-radius:9px;padding:10px}
+.accounts-period-preview-v489{margin-top:10px;border:1px dashed #31516b;border-radius:9px;text-align:center;padding:9px;font-size:10px;color:#9ab4c9}
+.accounts-order-v489{display:grid;grid-template-columns:1fr 1fr;gap:9px}.accounts-order-v489 button{text-align:left}.accounts-order-v489 b{display:block;font-size:10px}.accounts-order-v489 span{display:block;font-size:9px;opacity:.75;margin-top:4px;line-height:1.35}
+.accounts-period-actions-v489{display:flex;justify-content:flex-end;gap:8px;margin-top:15px;padding-top:12px;border-top:1px solid #284158}.accounts-period-actions-v489 .act{border:1px solid #4a98ff;background:#2f83e8;color:white;border-radius:9px;padding:9px 14px;font-weight:800;cursor:pointer}
+@media(max-width:620px){.accounts-period-presets-v489{grid-template-columns:repeat(2,1fr)}.accounts-order-v489,.accounts-period-dates-v489{grid-template-columns:1fr}}
+</style>
 
 <script>
 // v1.25 — Contas: base viva a partir do cadastro + Movimentações
@@ -9592,6 +9609,11 @@ document.getElementById('confirmRestoreDemo')?.addEventListener('click',()=>{doc
   if(!root) return;
   let selectedLiveAccountId=null;
   let accountsViewYear=2026,accountsViewMonth=8;
+  let accountsRangeStart='2026-09-01',accountsRangeEnd='2026-09-30',accountsOrder='asc';
+  const accountsRangeLabel=()=>{
+    const pt=iso=>{const p=String(iso||'').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:'—'};
+    return accountsRangeStart===accountsRangeEnd?pt(accountsRangeStart):pt(accountsRangeStart)+' até '+pt(accountsRangeEnd);
+  };
 
   const moneyBR=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   const signedBR=v=>(v>0?'+ ':v<0?'− ':'')+moneyBR(Math.abs(v));
@@ -9678,52 +9700,42 @@ document.getElementById('confirmRestoreDemo')?.addEventListener('click',()=>{doc
     .sort((x,y)=>rowIso(x).localeCompare(rowIso(y)));
   const liveAccount=a=>{
     const originalOpening=Number(a.openingBalance||0);
-    const openingDate=String(a.openingDate||(()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`})());
+    const openingDate=String(a.openingDate||(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01'})());
     const allRows=rowsForAccount(a).filter(r=>rowIso(r)>=openingDate);
-    const start=`${accountsViewYear}-${String(accountsViewMonth+1).padStart(2,'0')}-01`;
-    const nextMonth=accountsViewMonth===11
-      ? `${accountsViewYear+1}-01-01`
-      : `${accountsViewYear}-${String(accountsViewMonth+2).padStart(2,'0')}-01`;
-
-    // Antes do marco zero da conta, não existe saldo carregado para trás.
-    if(nextMonth<=openingDate){
-      return {
-        a,opening:0,rows:[],income:0,out:0,net:0,balance:0,
-        statement:[{iso:start,title:'Sem histórico neste período',cat:'—',dir:0,value:0,balance:0,opening:true}],
-        beforeOpening:true,openingDate
-      };
+    const start=accountsRangeStart;
+    const end=accountsRangeEnd;
+    const endExclusive=(()=>{const d=new Date(end+'T12:00:00');d.setDate(d.getDate()+1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')})();
+    if(endExclusive<=openingDate){
+      return {a,opening:0,rows:[],income:0,out:0,net:0,balance:0,statement:[{iso:start,title:'Sem histórico neste período',cat:'—',dir:0,value:0,balance:0,opening:true}],beforeOpening:true,openingDate};
     }
-
-    // Saldo no início do mês selecionado.
     let opening=0;
     if(start>=openingDate){
       opening=originalOpening;
-      allRows.filter(r=>rowIso(r)<start).forEach(r=>{
-        opening+=movementDirection(r,a)*rowValue(r);
-      });
+      allRows.filter(r=>rowIso(r)<start).forEach(r=>{opening+=movementDirection(r,a)*rowValue(r)});
     }
-
     const periodStart=start<openingDate?openingDate:start;
-    const rows=allRows.filter(r=>rowIso(r)>=periodStart&&rowIso(r)<nextMonth);
+    let rows=allRows.filter(r=>rowIso(r)>=periodStart&&rowIso(r)<endExclusive);
     let income=0,out=0,balance=opening;
+    const chronological=[...rows].sort((x,y)=>rowIso(x).localeCompare(rowIso(y)));
     const statement=[];
-
-    // Se o marco zero acontece dentro do mês, ele entra naquele dia.
-    if(start<openingDate && openingDate<nextMonth){
+    if(start<openingDate&&openingDate<endExclusive){
       balance=originalOpening;
       statement.push({iso:openingDate,title:'Saldo de abertura',cat:'—',dir:0,value:0,balance,opening:true});
     }else{
       statement.push({iso:start,title:'Saldo anterior',cat:'—',dir:0,value:0,balance,opening:true});
     }
-
-    rows.forEach(r=>{
-      const dir=movementDirection(r,a), val=rowValue(r);
-      if(dir>0) income+=val; else if(dir<0) out+=val;
+    chronological.forEach(r=>{
+      const dir=movementDirection(r,a),val=rowValue(r);
+      if(dir>0)income+=val;else if(dir<0)out+=val;
       balance+=dir*val;
       const type=String(r.dataset.type||'');
-      let cat=type.split('·').slice(1).join('·').trim()||type||'—';
+      const cat=type.split('·').slice(1).join('·').trim()||type||'—';
       statement.push({iso:rowIso(r),title:r.dataset.title||'Lançamento',cat,dir,value:val,balance});
     });
+    if(accountsOrder==='desc'){
+      const openingRow=statement[0],rest=statement.slice(1).reverse();
+      statement.splice(0,statement.length,...rest,openingRow);
+    }
     return {a,opening,rows,income,out,net:income-out,balance,statement,beforeOpening:false,openingDate};
   };
   const activeAccounts=()=>{
@@ -9908,7 +9920,7 @@ document.getElementById('confirmRestoreDemo')?.addEventListener('click',()=>{doc
     const x=data.find(x=>String(x.a.id)===String(selectedLiveAccountId)); if(!x)return;
     const q=id=>document.getElementById(id);
     q('accountDetailName').textContent=x.a.name;
-    q('accountDetailMeta').textContent=`${x.a.type} · ${x.a.bank||'—'} · ${accountsMonthNames[accountsViewMonth]}/${accountsViewYear}`;
+    q('accountDetailMeta').textContent=`${x.a.type} · ${x.a.bank||'—'} · ${accountsRangeLabel()}`;
     q('accPrev').textContent=moneyBR(x.opening);
     q('accIn').textContent=moneyBR(x.income);
     q('accOut').textContent=moneyBR(x.out);
@@ -9961,60 +9973,44 @@ document.getElementById('confirmRestoreDemo')?.addEventListener('click',()=>{doc
   // Sempre que o modal de pagamento de fatura abrir, atualiza contas reais.
   document.getElementById('registerInvoicePayment')?.addEventListener('click',()=>setTimeout(syncOwnAccountControls,0),true);
 
-  // v1.345 — seletor mensal das Contas
+  // v1.489 — Contas: seletor de período igual à lógica de Movimentações
   const accountsMonthNames=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  const accountsMonthShort=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  let accountsPickerYearV345=accountsViewYear;
   const accountsMonthBtnV345=document.getElementById('accountsMonthPickerBtnV345');
   const accountsMonthModalV345=document.getElementById('accountsMonthModalV345');
-  const accountsMonthCardV345=accountsMonthModalV345?.querySelector('.mov-month-card');
-  const accountsMonthGridV345=document.getElementById('accountsMonthGridV345');
-  const accountsPickerYearLabelV345=document.getElementById('accountsPickerYearV345');
   const accountsMonthTipV345=document.getElementById('accountsMonthTipV345');
-
+  const rangeStart=document.getElementById('accountsRangeStartV489'),rangeEnd=document.getElementById('accountsRangeEndV489'),preview=document.getElementById('accountsRangePreviewV489');
+  const isoLocal=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const pt=iso=>{const p=String(iso||'').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:'—'};
   function syncAccountsPeriodV345(){
-    const label=`${accountsMonthNames[accountsViewMonth]} / ${accountsViewYear}`;
+    const label=accountsRangeLabel();
     if(accountsMonthTipV345)accountsMonthTipV345.textContent=label;
-    if(accountsMonthBtnV345){
-      accountsMonthBtnV345.title=label;
-      accountsMonthBtnV345.setAttribute('aria-label',`Selecionar mês: ${label}`);
-    }
+    if(accountsMonthBtnV345){accountsMonthBtnV345.title=label;accountsMonthBtnV345.setAttribute('aria-label','Selecionar período: '+label)}
   }
-  function renderAccountsPickerV345(){
-    if(accountsPickerYearLabelV345)accountsPickerYearLabelV345.textContent=accountsPickerYearV345;
-    if(accountsMonthGridV345){
-      accountsMonthGridV345.innerHTML=accountsMonthShort.map((n,i)=>`<button type="button" class="mov-month-choice ${accountsPickerYearV345===accountsViewYear&&i===accountsViewMonth?'active':''}" data-accounts-month-v345="${i}">${n}</button>`).join('');
-    }
-  }
-  function positionAccountsPickerV345(){
-    if(!accountsMonthBtnV345||!accountsMonthCardV345)return;
-    const r=accountsMonthBtnV345.getBoundingClientRect(),w=accountsMonthCardV345.offsetWidth||152,h=accountsMonthCardV345.offsetHeight||175;
-    accountsMonthCardV345.style.left=Math.max(8,Math.min(innerWidth-w-8,r.right-w))+'px';
-    accountsMonthCardV345.style.top=Math.max(8,Math.min(innerHeight-h-8,r.bottom+6))+'px';
-  }
+  function previewRange(){if(preview)preview.textContent=pt(rangeStart?.value)+' até '+pt(rangeEnd?.value)}
   function closeAccountsPickerV345(){accountsMonthModalV345?.classList.remove('open')}
   accountsMonthBtnV345?.addEventListener('click',e=>{
     e.preventDefault();e.stopPropagation();
-    accountsPickerYearV345=accountsViewYear;
-    renderAccountsPickerV345();
+    if(rangeStart)rangeStart.value=accountsRangeStart;if(rangeEnd)rangeEnd.value=accountsRangeEnd;previewRange();
     accountsMonthModalV345?.classList.add('open');
-    requestAnimationFrame(positionAccountsPickerV345);
   });
-  document.getElementById('accountsPickerPrevYearV345')?.addEventListener('click',()=>{accountsPickerYearV345--;renderAccountsPickerV345()});
-  document.getElementById('accountsPickerNextYearV345')?.addEventListener('click',()=>{accountsPickerYearV345++;renderAccountsPickerV345()});
-  accountsMonthModalV345?.querySelectorAll('[data-accounts-month-close-v345]').forEach(x=>x.addEventListener('click',closeAccountsPickerV345));
-  accountsMonthModalV345?.addEventListener('click',e=>{
-    if(e.target===accountsMonthModalV345){closeAccountsPickerV345();return}
-    const opt=e.target.closest('[data-accounts-month-v345]');
-    if(!opt)return;
-    accountsViewYear=accountsPickerYearV345;
-    accountsViewMonth=Number(opt.dataset.accountsMonthV345);
-    syncAccountsPeriodV345();
-    closeAccountsPickerV345();
-    renderAccountsLive();
+  accountsMonthModalV345?.querySelectorAll('[data-accounts-period-close-v489]').forEach(x=>x.addEventListener('click',closeAccountsPickerV345));
+  accountsMonthModalV345?.addEventListener('click',e=>{if(e.target===accountsMonthModalV345)closeAccountsPickerV345()});
+  [rangeStart,rangeEnd].forEach(x=>x?.addEventListener('change',()=>{accountsMonthModalV345?.querySelectorAll('[data-accounts-preset-v489]').forEach(b=>b.classList.toggle('active',b.dataset.accountsPresetV489==='custom'));previewRange()}));
+  accountsMonthModalV345?.querySelectorAll('[data-accounts-order-v489]').forEach(b=>b.addEventListener('click',()=>{accountsMonthModalV345.querySelectorAll('[data-accounts-order-v489]').forEach(x=>x.classList.remove('active'));b.classList.add('active')}));
+  accountsMonthModalV345?.querySelectorAll('[data-accounts-preset-v489]').forEach(b=>b.addEventListener('click',()=>{
+    const mode=b.dataset.accountsPresetV489;accountsMonthModalV345.querySelectorAll('[data-accounts-preset-v489]').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+    if(mode==='custom')return;
+    const today=new Date(),end=new Date(today),start=new Date(today);
+    if(mode==='month'){start.setDate(1);end.setMonth(end.getMonth()+1,0)}else start.setDate(start.getDate()-(Number(mode)-1));
+    if(rangeStart)rangeStart.value=isoLocal(start);if(rangeEnd)rangeEnd.value=isoLocal(end);previewRange();
+  }));
+  document.getElementById('accountsRangeApplyV489')?.addEventListener('click',()=>{
+    const st=rangeStart?.value,en=rangeEnd?.value;if(!st||!en||st>en)return;
+    accountsRangeStart=st;accountsRangeEnd=en;
+    accountsOrder=accountsMonthModalV345?.querySelector('[data-accounts-order-v489].active')?.dataset.accountsOrderV489||'asc';
+    const d=new Date(en+'T12:00:00');accountsViewYear=d.getFullYear();accountsViewMonth=d.getMonth();
+    syncAccountsPeriodV345();closeAccountsPickerV345();renderAccountsLive();
   });
-  addEventListener('resize',()=>{if(accountsMonthModalV345?.classList.contains('open'))positionAccountsPickerV345()});
-  addEventListener('scroll',()=>{if(accountsMonthModalV345?.classList.contains('open'))positionAccountsPickerV345()},true);
   syncAccountsPeriodV345();
 renderAccountsLive();
 })();
@@ -24802,6 +24798,9 @@ body.ns-density-comfortable .favorite-row{
 (()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/NovaSol v1\.0 · Build 48[4-7]/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build 48[4-7]/,'NovaSol v1.0 · Build 488')}};f();document.addEventListener('DOMContentLoaded',f);setTimeout(f,300)})();
 </script>
 
+<script id="novasol-v489-version">
+(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/NovaSol v1\.0 · Build 48[4-8]/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build 48[4-8]/,'NovaSol v1.0 · Build 489')}};f();document.addEventListener('DOMContentLoaded',f);setTimeout(f,300)})();
+</script>
 <script id="novasol-release-sw">
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', function () {
