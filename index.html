@@ -24741,6 +24741,67 @@ body.ns-density-comfortable .favorite-row{
 <script id="novasol-v487-version-fix">
 (()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/NovaSol v1\.0 · Build 48[4-6]/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build 48[4-6]/,'NovaSol v1.0 · Build 487')}};f();document.addEventListener('DOMContentLoaded',f);setTimeout(f,300)})();
 </script>
+
+<script id="novasol-v488-opening-balance-fix">
+(()=>{
+ if(window.__novaSolOpeningBalanceV488)return;window.__novaSolOpeningBalanceV488=true;
+ const root=document.getElementById('movements');if(!root)return;
+ const brl=v=>(Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+ const norm=v=>String(v||'').trim().toLowerCase();
+ const num=v=>{if(typeof parseMoneyInput==='function')return Number(parseMoneyInput(String(v||'')))||0;let x=String(v||'').replace(/[^\\d,.-]/g,'').replace(/\\./g,'').replace(',','.');return Number(x)||0};
+ const rowIso=r=>r?.dataset?.effectiveIsoDate||r?.dataset?.isoDate||(()=>{const p=String(r?.dataset?.date||'').split('/');return p.length===3?p[2]+'-'+p[1]+'-'+p[0]:''})();
+ const done=r=>/Recebida|Paga|Realizada|Realizado/i.test(String(r?.dataset?.status||''));
+ const cardRow=r=>r?.dataset?.cardPurchase==='1'||!!r?.dataset?.cardId;
+ function view(){try{return JSON.parse(localStorage.getItem('novasol_mov_view_v161')||'{}')}catch(_){return{}}}
+ function scope(){return document.getElementById('movAccountFilter')?.value||'all'}
+ function selectedAccounts(){
+   const list=(typeof accountSettingsData!=='undefined'?accountSettingsData:[])||[],sc=String(scope());
+   if(sc.startsWith('card:'))return[];
+   if(sc.startsWith('account:')){const id=sc.slice(8);return list.filter(a=>String(a.id)===id)}
+   return list.filter(a=>a&&a.active!==false&&a.include!==false);
+ }
+ function relation(r,a){
+   if(cardRow(r)||!done(r))return 0;
+   const aid=String(a.id??''),an=norm(a.name),t=String(r.dataset.type||''),v=num(r.dataset.value);
+   if(/Transfer/i.test(t)){
+     const oi=String(r.dataset.transferOriginId||r.dataset.accountId||''),di=String(r.dataset.transferDestinationId||''),on=norm(r.dataset.transferOrigin||r.dataset.account),dn=norm(r.dataset.transferDestination||''),own=r.dataset.transferOwn==='1'||/Minha conta/i.test(t);
+     return ((oi?oi===aid:(!oi&&on===an))?-v:0)+(own&&(di?di===aid:(!di&&dn===an))?v:0);
+   }
+   const rid=String(r.dataset.accountId||''),rn=norm(r.dataset.account);
+   if(rid?(rid!==aid):(rn!==an))return 0;
+   if(r.querySelector('.amount.in'))return v;
+   if(r.querySelector('.amount.out'))return-v;
+   if(/Resgate/i.test(t))return v;
+   if(/Aplicação|Despesa|Pagamento/i.test(t))return-v;
+   if(/Receita|Holerite/i.test(t))return v;
+   if(/^Cashback/i.test(t)&&r.dataset.cashbackDestination==='Conta')return v;
+   return 0;
+ }
+ function render(){
+   const card=root.querySelector('.mov-opening-v486');if(!card)return;
+   const sc=String(scope());
+   if(sc.startsWith('card:')){card.querySelector(':scope > strong').textContent='—';return}
+   const start=view().start||'0000-01-01',rows=[...root.querySelectorAll('.tx-row')],parts=selectedAccounts().map(a=>{
+     const od=String(a.openingDate||''),base=(!od||od<start)?Number(a.openingBalance||0):0;
+     const prior=rows.filter(r=>{const d=rowIso(r);return d&&d<start&&(!od||d>=od)}).reduce((z,r)=>z+relation(r,a),0);
+     return{name:a.name||'Conta',balance:base+prior};
+   });
+   const total=parts.reduce((z,x)=>z+x.balance,0),strong=card.querySelector(':scope > strong');
+   strong.textContent=brl(total);strong.className=total<0?'red':'';
+   const pop=card.querySelector('.mov-pop');
+   if(pop)pop.innerHTML='<h4>Saldo imediatamente anterior ao período</h4><div class="mov-pop-line"><span>Saldo anterior</span><strong>'+brl(total)+'</strong></div>'+(parts.length>1?parts.map(x=>'<div class="mov-pop-line"><span>'+x.name+'</span><strong>'+brl(x.balance)+'</strong></div>').join(''):'');
+ }
+ let timer;const go=()=>{clearTimeout(timer);timer=setTimeout(render,180)};
+ document.addEventListener('novasol:movements-updated',go);document.addEventListener('novasol:accounts-updated',go);document.addEventListener('novasol:restore-complete',go);
+ document.getElementById('movAccountFilter')?.addEventListener('change',go);document.getElementById('movPeriodApplyV163')?.addEventListener('click',()=>setTimeout(go,180));
+ new MutationObserver(go).observe(root,{childList:true,subtree:true});
+ setTimeout(render,700);
+})();
+</script>
+<script id="novasol-v488-version">
+(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/NovaSol v1\.0 · Build 48[4-7]/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build 48[4-7]/,'NovaSol v1.0 · Build 488')}};f();document.addEventListener('DOMContentLoaded',f);setTimeout(f,300)})();
+</script>
+
 <script id="novasol-release-sw">
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', function () {
