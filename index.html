@@ -24880,30 +24880,38 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 })();
 </script>
 
-<script id="novasol-v493-calendar-render-guard">
+<script id="novasol-v494-calendar-interaction-lock">
 (()=>{
-  if(window.__novaSolCalendarRenderGuardV493)return;
-  window.__novaSolCalendarRenderGuardV493=true;
+  if(window.__novaSolCalendarInteractionLockV494)return;
+  window.__novaSolCalendarInteractionLockV494=true;
   const install=()=>{
     const real=window.novaSolCalendarRender;
-    if(typeof real!=='function')return;
-    let busy=false,last=0;
+    if(typeof real!=='function'||real.__v494)return;
+    let busy=false,pending=false;
     const guarded=function(...args){
-      const page=document.getElementById('calendar');
       const grid=document.getElementById('calGrid');
-      if(!page||!grid||busy)return;
-      const now=performance.now();
-      // Evita que os vários observers legados destruam/recriem a grade em rajada.
-      // Render explícito continua permitido quando a grade está vazia.
-      if(grid.childElementCount && now-last<180)return;
-      busy=true;last=now;
+      if(!grid||busy)return;
+      if(grid.matches(':hover')){
+        pending=true;
+        return;
+      }
+      busy=true;
       try{return real.apply(this,args)}finally{busy=false}
     };
+    guarded.__v494=true;
     window.novaSolCalendarRender=guarded;
     window.renderCalendar=guarded;
+    const grid=document.getElementById('calGrid');
+    if(grid&&!grid.dataset.v494LeaveBound){
+      grid.dataset.v494LeaveBound='1';
+      grid.addEventListener('mouseleave',()=>{
+        if(!pending)return;
+        pending=false;
+        requestAnimationFrame(()=>guarded());
+      });
+    }
   };
-  install();
-  setTimeout(install,0);
+  install();setTimeout(install,0);
 })();
 </script>
 <style id="novasol-v493-calendar-hover-stable">
@@ -24911,5 +24919,9 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 </style>
 <script id="novasol-v493-version">
 (()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 493')}};f();document.addEventListener('DOMContentLoaded',f,{once:true});window.addEventListener('load',f,{once:true});setTimeout(f,500)})();
+</script>
+
+<script id="novasol-v494-version">
+(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 494')}};f();document.addEventListener('DOMContentLoaded',f,{once:true});window.addEventListener('load',f,{once:true});setTimeout(f,500)})();
 </script>
 </body></html>
