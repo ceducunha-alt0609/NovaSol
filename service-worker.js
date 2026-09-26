@@ -1,4 +1,4 @@
-const CACHE='novasol-v1.0-build482-pwa3';
+const CACHE='novasol-v1.0-build483-pwa4';
 const BASE='/NovaSol/';
 const SHELL=[BASE,BASE+'index.html',BASE+'manifest.json',BASE+'icons/icon-192.png',BASE+'icons/icon-512.png'];
 
