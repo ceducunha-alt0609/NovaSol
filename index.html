@@ -24846,6 +24846,17 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 })();
 </script>
 <script id="novasol-v491-version">
-(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/NovaSol v1\\.0 · Build 49[0-1]/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\\.0 · Build 49[0-1]/,'NovaSol v1.0 · Build 491')}};f();document.addEventListener('DOMContentLoaded',f);setTimeout(f,300)})();
+(()=>{
+ const f=()=>{
+   const foot=document.querySelector('.side .foot');if(!foot)return;
+   const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;
+   while((n=w.nextNode())){
+     if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||'')){
+       n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 491');
+     }
+   }
+ };
+ f();document.addEventListener('DOMContentLoaded',f,{once:true});window.addEventListener('load',f,{once:true});setTimeout(f,500);
+})();
 </script>
 </body></html>
