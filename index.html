@@ -24489,6 +24489,98 @@ body.ns-density-comfortable .favorite-row{
 (()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/v1\.476 CLEAN/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/v1\.476 CLEAN[^\n]*/,'NovaSol v1.0 · Build 481');}};f();document.addEventListener('DOMContentLoaded',f);setTimeout(f,250);})();
 </script>
 
+
+<style id="novasol-v482-pc-refino">
+/* Build 482 — aviso de dia não útil compacto */
+#businessDayField[style*="display: block"]{
+  display:grid!important;
+  grid-template-columns:auto minmax(0,1fr)!important;
+  align-items:center!important;
+  column-gap:12px!important;
+  row-gap:0!important;
+  padding:6px 10px!important;
+  min-height:0!important;
+}
+#businessDayField[style*="display: block"] .business-day-check{
+  margin:0!important;
+  white-space:nowrap!important;
+  font-size:10px!important;
+}
+#businessDayField[style*="display: block"] .business-day-hint{
+  margin:0!important;
+  font-size:9px!important;
+  line-height:1.2!important;
+  text-align:right!important;
+}
+@media(max-width:760px){
+  #businessDayField[style*="display: block"]{
+    grid-template-columns:1fr!important;
+    row-gap:3px!important;
+  }
+  #businessDayField[style*="display: block"] .business-day-hint{text-align:left!important}
+}
+</style>
+<script id="novasol-v482-income-categories">
+(()=>{
+  if(window.__novaSolIncomeCategoriesV482)return;
+  window.__novaSolIncomeCategoriesV482=true;
+
+  function incomeOrigins(){
+    const names=(typeof categoryData!=='undefined'?categoryData:[])
+      .filter(c=>c&&c.active&&c.type==='income')
+      .map(c=>String(c.name||'').trim())
+      .filter(Boolean)
+      .map(n=>/^Reembolsos$/i.test(n)?'Reembolsos / restituições':/^Outras receitas$/i.test(n)?'Outros':n);
+    const base=['Holerite / salário'];
+    return ['Selecione...',...new Set([...names,...base]),'+ Nova origem...'];
+  }
+
+  function refreshIncomeOriginSelect(prefer=''){
+    if(typeof activeTxType==='undefined'||activeTxType!=='Receita'||!originSelect)return;
+    const prev=prefer||originSelect.value;
+    opts(originSelect,incomeOrigins());
+    if([...originSelect.options].some(o=>o.value===prev||o.textContent===prev))originSelect.value=prev;
+    else originSelect.value='Selecione...';
+  }
+  window.novaSolRefreshIncomeOriginSelectV482=refreshIncomeOriginSelect;
+
+  const baseSetTxType=setTxType;
+  setTxType=function(type){
+    baseSetTxType(type);
+    if(type==='Receita'){
+      refreshIncomeOriginSelect();
+      originSelect.onchange=()=>{setPayrollMode();updateRevenueRefundUIV474();};
+    }
+  };
+
+  const save=document.getElementById('saveCategoryBtn');
+  save?.addEventListener('click',()=>{
+    const createdName=(document.getElementById('categoryNameInput')?.value||'').trim();
+    const createdType=categoryEditorType;
+    setTimeout(()=>{
+      if(activeTxType==='Receita'&&createdType==='income')refreshIncomeOriginSelect(createdName);
+      if(activeTxType==='Despesa'&&createdType==='expense')refreshExpenseCategorySelect(createdName);
+    },0);
+  });
+
+  document.getElementById('confirmCategoryDeactivate')?.addEventListener('click',()=>setTimeout(()=>{
+    if(activeTxType==='Receita')refreshIncomeOriginSelect();
+  },0));
+
+  const baseRender=renderCategories;
+  renderCategories=function(){
+    baseRender();
+    if(activeTxType==='Receita'&&document.getElementById('newModal')?.classList.contains('open')){
+      const prev=originSelect?.value||'';
+      refreshIncomeOriginSelect(prev);
+    }
+  };
+})();
+</script>
+<script id="novasol-v482-version">
+(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/NovaSol v1\.0 · Build 481/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build 481/,'NovaSol v1.0 · Build 482')}};f();document.addEventListener('DOMContentLoaded',f);setTimeout(f,250)})();
+</script>
+
 <script id="novasol-release-sw">
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', function () {
