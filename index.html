@@ -24810,43 +24810,42 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 </script>
 
 
-<!-- v490 — Calendário: recuperação independente da grade vazia -->
-<script id="novasol-v490-calendar-grid-recovery">
+<!-- v491 — Calendário: usar exclusivamente o controlador final existente -->
+<script id="novasol-v491-calendar-final-controller-fix">
 (()=>{
-  if(window.__novaSolCalendarGridRecoveryV490)return;
-  window.__novaSolCalendarGridRecoveryV490=true;
+  if(window.__novaSolCalendarFinalFixV491)return;
+  window.__novaSolCalendarFinalFixV491=true;
 
-  function recoverCalendarGridV490(){
-    const g=document.getElementById('calGrid');
-    if(!g)return;
-    try{ window.renderCalendar?.(); }catch(e){ console.warn('NovaSol v490: render principal do calendário',e); }
-    if(g.querySelector('.cal-day'))return;
-
-    const now=new Date();
-    let y=now.getFullYear(),m=now.getMonth();
+  function restoreFinalCalendarV491(){
+    const page=document.getElementById('calendar');
+    const grid=document.getElementById('calGrid');
+    if(!page||!grid)return;
     try{
-      if(typeof calYear!=='undefined')y=Number(calYear);
-      if(typeof calMonth!=='undefined')m=Number(calMonth);
-    }catch(_){}
-    const first=new Date(y,m,1),days=new Date(y,m+1,0).getDate(),off=first.getDay();
-    const prevDays=new Date(y,m,0).getDate();
-    let out='';
-    for(let i=off;i>0;i--)out+='<div class="cal-day empty"><div class="cal-num"><span>'+(prevDays-i+1)+'</span></div></div>';
-    for(let d=1;d<=days;d++){
-      const today=now.getFullYear()===y&&now.getMonth()===m&&now.getDate()===d;
-      out+='<div class="cal-day'+(today?' today':'')+'"><div class="cal-num"><span>'+d+'</span>'+(today?'<span class="today-tag">HOJE</span>':'')+'</div><div class="cal-items"></div></div>';
-    }
-    const used=off+days,tail=(7-(used%7))%7;
-    for(let d=1;d<=tail;d++)out+='<div class="cal-day empty"><div class="cal-num"><span>'+d+'</span></div></div>';
-    g.innerHTML=out;
+      if(typeof window.novaSolCalendarRender==='function'){
+        window.novaSolCalendarRender();
+      }
+    }catch(e){console.warn('NovaSol v491: controlador final do calendário',e)}
   }
 
   const nav=document.querySelector('.nav[data-page="calendar"]');
-  nav?.addEventListener('click',()=>setTimeout(recoverCalendarGridV490,20));
-  document.getElementById('calMonthPickerBtn')?.addEventListener('click',()=>setTimeout(recoverCalendarGridV490,20));
-  document.addEventListener('novasol:movements-updated',()=>setTimeout(recoverCalendarGridV490,40));
-  setTimeout(recoverCalendarGridV490,60);
-  window.novaSolRecoverCalendarGridV490=recoverCalendarGridV490;
+  nav?.addEventListener('click',()=>{
+    requestAnimationFrame(()=>requestAnimationFrame(restoreFinalCalendarV491));
+    setTimeout(restoreFinalCalendarV491,80);
+  });
+  document.addEventListener('novasol:movements-updated',()=>setTimeout(restoreFinalCalendarV491,60));
+  document.addEventListener('novasol:restore-complete',()=>setTimeout(restoreFinalCalendarV491,80));
+
+  // Compatibilidade: qualquer chamada tardia ao render global deve terminar
+  // no controlador final consolidado, não nos renderizadores legados.
+  setTimeout(()=>{
+    if(typeof window.novaSolCalendarRender==='function'){
+      window.renderCalendar=window.novaSolCalendarRender;
+    }
+    restoreFinalCalendarV491();
+  },0);
 })();
+</script>
+<script id="novasol-v491-version">
+(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/NovaSol v1\\.0 · Build 49[0-1]/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\\.0 · Build 49[0-1]/,'NovaSol v1.0 · Build 491')}};f();document.addEventListener('DOMContentLoaded',f);setTimeout(f,300)})();
 </script>
 </body></html>
