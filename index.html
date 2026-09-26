@@ -24583,21 +24583,17 @@ body.ns-density-comfortable .favorite-row{
 
 
 <style id="novasol-v483-businessday-order">
-/* Build 483 — primeira linha sempre: Data | Valor | Origem | Conta.
-   O aviso de dia não útil passa para a linha seguinte. */
-#newModal .form-grid{position:relative}
-#newModal #businessDayField{order:5!important}
+/* Build 484 — preserva a ordem original do formulário e move somente o aviso.
+   Primeira linha: Data | Valor | Origem | Conta. Depois aviso, descrição etc. */
 #newModal .form-grid>.field:has(#txDateInput){order:1!important}
 #newModal .form-grid>.field:has(#amountInput){order:2!important}
 #newModal #primaryLeft{order:3!important}
 #newModal #primaryRight{order:4!important}
-#newModal .form-grid>.field:has(#descInput){order:6!important}
-#newModal .form-grid>.field:has(#statusSelect){order:7!important}
-#newModal .form-grid>.field:has(#recurrenceSelect){order:8!important}
-#newModal .form-grid>.field:has(#obsInput){order:20!important}
+#newModal #businessDayField{order:5!important}
+#newModal .form-grid>*:not(:has(#txDateInput)):not(:has(#amountInput)):not(#primaryLeft):not(#primaryRight):not(#businessDayField){order:6!important}
 </style>
 <script id="novasol-v483-version">
-(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/NovaSol v1\.0 · Build 482/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build 482/,'NovaSol v1.0 · Build 483')}};f();document.addEventListener('DOMContentLoaded',f);setTimeout(f,250)})();
+(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/NovaSol v1\.0 · Build 482/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build 482/,'NovaSol v1.0 · Build 484')}};f();document.addEventListener('DOMContentLoaded',f);setTimeout(f,250)})();
 </script>
 
 <script id="novasol-release-sw">
