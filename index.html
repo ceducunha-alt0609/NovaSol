@@ -24640,7 +24640,7 @@ body.ns-density-comfortable .favorite-row{
    const host=root.querySelector('.mov-summary');if(!host)return;
    let card=host.querySelector('.mov-balance-v485');
    if(!card){card=document.createElement('div');card.className='mov-mini mov-balance-v485';card.innerHTML='<small>Saldo em contas</small><strong>R$ 0,00</strong><div class="mov-pop"></div>';host.appendChild(card)}
-   const sc=String(scope()),end=(typeof movRangeEnd!=='undefined'?movRangeEnd:'9999-12-31'),acs=accounts();
+   const sc=String(scope()),view=(()=>{try{return JSON.parse(localStorage.getItem('novasol_mov_view_v161')||'{}')}catch(_){return{}}})(),end=view.end||'9999-12-31',acs=accounts();
    if(sc.startsWith('card:')){card.querySelector('strong').textContent='—';card.querySelector('strong').className='';card.querySelector('.mov-pop').innerHTML='<h4>Saldo em contas</h4><div class="mov-pop-line"><span>Filtro atual</span><strong>Cartão de crédito</strong></div><div class="mov-pop-line"><span>Saldo bancário</span><strong>não se aplica</strong></div>';return}
    const rows=[...root.querySelectorAll('.tx-row')],parts=acs.map(a=>{const op=(a.openingDate&&String(a.openingDate)>end)?0:(Number(a.openingBalance)||0);const mv=rows.filter(r=>{const d=iso(r);return d&&d<=end}).reduce((n,r)=>n+delta(r,a),0);return{name:a.name||'Conta',opening:op,mov:mv,balance:op+mv}});
    const total=parts.reduce((n,x)=>n+x.balance,0),opening=parts.reduce((n,x)=>n+x.opening,0),moves=parts.reduce((n,x)=>n+x.mov,0);
@@ -24661,17 +24661,22 @@ body.ns-density-comfortable .favorite-row{
 
 
 <style id="novasol-v486-mov-summary-layout">
-/* Build 486 — Movimentações: 5 cards de fluxo na primeira linha e 4 de posição na segunda */
+/* Build 487 — Movimentações: 5 cards de fluxo na primeira linha e 4 de posição na segunda */
 #movements .mov-summary{
   display:grid!important;
   grid-template-columns:repeat(10,minmax(0,1fr))!important;
   gap:10px!important;
 }
 #movements .mov-summary>.mov-mini{grid-column:span 2!important;min-width:0!important}
-#movements .mov-summary>.mov-mini:nth-child(6){grid-column:2 / span 2!important}
-#movements .mov-summary>.mov-mini:nth-child(7){grid-column:4 / span 2!important}
+#movements .mov-summary>.mov-mini:nth-child(1){grid-column:3 / span 2!important;grid-row:1!important}
+#movements .mov-summary>.mov-mini:nth-child(2){grid-column:5 / span 2!important;grid-row:1!important}
+#movements .mov-summary>.mov-mini:nth-child(3){grid-column:7 / span 2!important;grid-row:1!important}
+#movements .mov-summary>.mov-mini:nth-child(4){grid-column:9 / span 2!important;grid-row:1!important}
+#movements .mov-summary>.mov-mini:nth-child(5){grid-column:2 / span 2!important;grid-row:2!important}
+#movements .mov-summary>.mov-mini:nth-child(6){grid-column:4 / span 2!important;grid-row:2!important}
+#movements .mov-summary>.mov-mini:nth-child(7){grid-column:6 / span 2!important;grid-row:2!important}
+#movements .mov-summary>.mov-mini.mov-balance-v485{grid-column:8 / span 2!important;grid-row:2!important}
 #movements .mov-summary>.mov-mini.mov-opening-v486{grid-column:1 / span 2!important;grid-row:1!important}
-#movements .mov-summary>.mov-mini.mov-balance-v485{grid-column:8 / span 2!important}
 @media(max-width:1050px){
  #movements .mov-summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
  #movements .mov-summary>.mov-mini,#movements .mov-summary>.mov-mini:nth-child(6),#movements .mov-summary>.mov-mini:nth-child(7),#movements .mov-summary>.mov-mini.mov-opening-v486,#movements .mov-summary>.mov-mini.mov-balance-v485{grid-column:auto!important;grid-row:auto!important}
@@ -24709,8 +24714,8 @@ body.ns-density-comfortable .favorite-row{
  function render(){
    const host=root.querySelector('.mov-summary');if(!host)return;
    let card=host.querySelector('.mov-opening-v486');
-   if(!card){card=document.createElement('div');card.className='mov-mini mov-opening-v486';card.innerHTML='<small>Saldo anterior</small><strong>R$ 0,00</strong><div class="mov-pop"></div>';host.insertBefore(card,host.firstElementChild)}
-   const scope=String(sc()),start=(typeof movRangeStart!=='undefined'?movRangeStart:'0000-01-01'),accounts=acs();
+   if(!card){card=document.createElement('div');card.className='mov-mini mov-opening-v486';card.innerHTML='<small>Saldo anterior</small><strong>R$ 0,00</strong><div class="mov-pop"></div>';host.appendChild(card)}
+   const scope=String(sc()),view=(()=>{try{return JSON.parse(localStorage.getItem('novasol_mov_view_v161')||'{}')}catch(_){return{}}})(),start=view.start||'0000-01-01',accounts=acs();
    if(scope.startsWith('card:')){card.querySelector('strong').textContent='—';card.querySelector('.mov-pop').innerHTML='<h4>Saldo anterior</h4><div class="mov-pop-line"><span>Filtro atual</span><strong>Cartão de crédito</strong></div>';return}
    const rows=[...root.querySelectorAll('.tx-row')],parts=accounts.map(a=>{
      const opening=(a.openingDate&&String(a.openingDate)>=start)?0:(Number(a.openingBalance)||0);
@@ -24730,9 +24735,12 @@ body.ns-density-comfortable .favorite-row{
 })();
 </script>
 <script id="novasol-v486-version">
-(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/NovaSol v1\\.0 · Build 48[45]/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\\.0 · Build 48[45]/,'NovaSol v1.0 · Build 486')}};f();document.addEventListener('DOMContentLoaded',f);setTimeout(f,300)})();
+(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/NovaSol v1\.0 · Build 48[4-6]/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build 48[4-6]/,'NovaSol v1.0 · Build 487')}};f();document.addEventListener('DOMContentLoaded',f);setTimeout(f,300)})();
 </script>
 
+<script id="novasol-v487-version-fix">
+(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){if(/NovaSol v1\.0 · Build 48[4-6]/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build 48[4-6]/,'NovaSol v1.0 · Build 487')}};f();document.addEventListener('DOMContentLoaded',f);setTimeout(f,300)})();
+</script>
 <script id="novasol-release-sw">
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', function () {
