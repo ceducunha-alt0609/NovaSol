@@ -1,6 +1,6 @@
-/* NovaSol — Firebase bridge Build 501
+/* NovaSol — Firebase bridge Build 507
    Inicializa Firebase somente quando NOVASOL_FIREBASE_CONFIG estiver preenchido.
-   Nesta build não há leitura nem gravação automática no Firestore.
+   Nesta build existe apenas um teste manual de diagnóstico; não há sincronização automática nem envio de dados financeiros.
 */
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import {
@@ -12,7 +12,13 @@ import {
   setPersistence,
   browserLocalPersistence
 } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
-import { getFirestore } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
 
 const required=['apiKey','authDomain','projectId','appId'];
 const cfg=window.NOVASOL_FIREBASE_CONFIG;
@@ -54,6 +60,22 @@ if(!configured){
       currentUser:()=>auth.currentUser,
       signIn:()=>signInWithPopup(auth,provider),
       signOut:()=>signOut(auth),
+      async testConnection(){
+        const user=auth.currentUser;
+        if(!user)throw new Error('Faça login com Google antes de testar a conexão.');
+        const ref=doc(db,'users',user.uid,'diagnostics','connectivity');
+        const payload={
+          kind:'connectivity-test',
+          app:'NovaSol',
+          build:507,
+          source:'web',
+          updatedAt:serverTimestamp()
+        };
+        await setDoc(ref,payload,{merge:true});
+        const snap=await getDoc(ref);
+        if(!snap.exists())throw new Error('O diagnóstico foi enviado, mas não pôde ser lido de volta.');
+        return {ok:true,path:ref.path,data:snap.data()};
+      },
       configProjectId:cfg.projectId
     };
     window.NovaSolCloud=api;
