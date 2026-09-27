@@ -268,7 +268,7 @@ if(!configured){
           const when=t=>t?new Date(t).toLocaleString('pt-BR'):'não informada';
           if(msg){
             msg.textContent='✓ '+r.label+' · local '+r.local.summary.movements+' lanç. ('+when(r.localTime)+') · nuvem '+r.cloud.summary.movements+' lanç. ('+when(r.cloudTime)+')';
-            msg.classList.add('show',r.state==='equal'?'success':'');
+            msg.classList.add('show');if(r.state==='equal')msg.classList.add('success');else msg.classList.remove('success');
           }
           window.dispatchEvent(new CustomEvent('novasol:cloud-state-compared',{detail:{state:r.state,label:r.label,localSha:r.localSha,cloudSha:r.cloudSha,localTime:r.localTime,cloudTime:r.cloudTime}}));
         }catch(e){
