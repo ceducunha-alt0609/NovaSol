@@ -25128,14 +25128,14 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 #backupSettingsModal .novasol-cloud-auth-badge{border:1px solid #35566f;background:#0c2233;color:#91afc2;border-radius:999px;padding:5px 8px;font-size:9px;font-weight:700;white-space:nowrap}
 #backupSettingsModal .novasol-cloud-auth-badge.connected{border-color:rgba(78,225,154,.35);background:rgba(78,225,154,.08);color:#4ee19a}
 #backupSettingsModal .novasol-cloud-auth-user{margin-top:10px;padding:9px 10px;border-radius:9px;background:#0b2234;border:1px solid rgba(73,111,139,.32);font-size:9px;color:#bcd0df;overflow-wrap:anywhere}
-#backupSettingsModal .novasol-cloud-auth-actions{display:flex;gap:8px;margin-top:10px}
-#backupSettingsModal .novasol-cloud-auth-actions button{min-height:36px}
+#backupSettingsModal .novasol-cloud-auth-actions{display:flex;gap:8px;margin-top:9px;align-items:center}
+#backupSettingsModal .novasol-cloud-auth-actions button{min-height:32px!important;height:32px!important;padding:0 13px!important;width:auto!important;min-width:0!important;border-radius:8px!important;font-size:10px!important;font-weight:700!important}
 #backupSettingsModal .novasol-cloud-auth-msg{display:none;margin-top:8px;padding:8px 9px;border-radius:8px;background:rgba(244,207,99,.08);border:1px solid rgba(244,207,99,.24);color:#f4cf63;font-size:9px;line-height:1.4}
 #backupSettingsModal .novasol-cloud-auth-msg.show{display:block}
 @media(max-width:700px){
   #backupSettingsModal .novasol-cloud-auth-head{display:grid;grid-template-columns:1fr auto}
-  #backupSettingsModal .novasol-cloud-auth-actions{display:grid;grid-template-columns:1fr}
-  #backupSettingsModal .novasol-cloud-auth-actions button{width:100%}
+  #backupSettingsModal .novasol-cloud-auth-actions{display:flex}
+  #backupSettingsModal .novasol-cloud-auth-actions button{width:auto!important}
 }
 </style>
 <script id="novasol-v503-cloud-auth-ui">
@@ -25144,6 +25144,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   window.__novaSolCloudAuthUiV503=true;
   function errorText(error){
     const code=error?.code||'';
+    if(code==='auth/api-key-not-valid.-please-pass-a-valid-api-key.'||code==='auth/invalid-api-key'||String(code).includes('api-key-not-valid'))return 'A chave do Firebase não foi aceita. Precisamos copiar novamente o firebaseConfig diretamente do console.';
     if(code==='auth/unauthorized-domain')return 'Este endereço ainda não está autorizado no Firebase.';
     if(code==='auth/popup-blocked')return 'O navegador bloqueou a janela do Google. Libere pop-ups e tente novamente.';
     if(code==='auth/popup-closed-by-user'||code==='auth/cancelled-popup-request')return 'Login cancelado. Nenhum dado foi alterado.';
@@ -25181,7 +25182,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   setTimeout(()=>{ensure();renderFromApi()},650);
 })();
 </script>
-<script id="novasol-v503-version">
-(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 503')}};f();document.addEventListener('DOMContentLoaded',f,{once:true});window.addEventListener('load',f,{once:true});setTimeout(f,500)})();
+<script id="novasol-v504-version">
+(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 504')}};f();document.addEventListener('DOMContentLoaded',f,{once:true});window.addEventListener('load',f,{once:true});setTimeout(f,500)})();
 </script>
 </body></html>
