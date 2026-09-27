@@ -1,4 +1,4 @@
-/* NovaSol — Firebase bridge Build 521
+/* NovaSol — Firebase bridge Build 522
    Inicializa Firebase somente quando NOVASOL_FIREBASE_CONFIG estiver preenchido.
    Nesta build a restauração controlada entrega a cópia validada à rotina nativa de restauração do NovaSol.
    Não há sincronização automática. A restauração exige prévia e confirmação explícita.
@@ -173,7 +173,7 @@ if(!configured){
         batch.set(backupRef,{
           kind:'novasol-cloud-backup',
           app:'NovaSol',
-          build:521,
+          build:522,
           schema:Number(meta.schema)||null,
           localSavedAt:meta.localSavedAt||null,
           dataRevision:Math.max(1,Number(meta.dataRevision)||1),
@@ -190,7 +190,7 @@ if(!configured){
 
         batch.set(doc(db,'users',user.uid,'cloudState','current'),{
           latestSnapshotId:snapshotId,
-          build:521,
+          build:522,
           schema:Number(meta.schema)||null,
           dataRevision:Math.max(1,Number(meta.dataRevision)||1),
           dataChangedAt:meta.dataChangedAt||null,
@@ -233,8 +233,13 @@ if(!configured){
     window.NovaSolCloud=api;
 
     const summarizeLocal=()=>{
-      const raw=localStorage.getItem('novasol_marco_zero_state_v1')||'';
-      let p={};try{p=raw?JSON.parse(raw):{}}catch{}
+      let p={};
+      try{
+        p=typeof window.novaSolCreateCompletePayload==='function'
+          ? window.novaSolCreateCompletePayload()
+          : JSON.parse(localStorage.getItem('novasol_marco_zero_state_v1')||'{}');
+      }catch{p={}}
+      const raw=JSON.stringify(p);
       return {raw,parsed:p,summary:{
         accounts:Array.isArray(p?.accounts)?p.accounts.length:0,
         cards:Array.isArray(p?.cards)?p.cards.length:0,
@@ -262,7 +267,8 @@ if(!configured){
         cards:Array.isArray(p.cards)?p.cards:[],
         holders:Array.isArray(p.holders)?p.holders:[],
         subscriptions:Array.isArray(p.subscriptions)?p.subscriptions:[],
-        movements:Array.isArray(p.movements)?p.movements:[]
+        movements:Array.isArray(p.movements)?p.movements:[],
+        auxiliary:(p.auxiliary&&typeof p.auxiliary==='object')?p.auxiliary:{}
       };
       return JSON.stringify(business);
     };
@@ -373,7 +379,7 @@ if(!configured){
     const stampBuild=()=>{
       const foot=document.querySelector('.side .foot');if(!foot)return;
       const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;
-      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 521');
+      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 522');
     };
     document.addEventListener('DOMContentLoaded',()=>{setTimeout(installRestoreControl,900);setTimeout(installStateDetector,950);setTimeout(stampBuild,900)},{once:true});
     window.addEventListener('load',()=>{setTimeout(installRestoreControl,500);setTimeout(installStateDetector,550);setTimeout(stampBuild,500)},{once:true});
