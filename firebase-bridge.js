@@ -1,4 +1,4 @@
-/* NovaSol — Firebase bridge Build 518
+/* NovaSol — Firebase bridge Build 519
    Inicializa Firebase somente quando NOVASOL_FIREBASE_CONFIG estiver preenchido.
    Nesta build a restauração controlada entrega a cópia validada à rotina nativa de restauração do NovaSol.
    Não há sincronização automática. A restauração exige prévia e confirmação explícita.
@@ -364,7 +364,7 @@ if(!configured){
     const stampBuild=()=>{
       const foot=document.querySelector('.side .foot');if(!foot)return;
       const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;
-      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 518');
+      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 519');
     };
     document.addEventListener('DOMContentLoaded',()=>{setTimeout(installRestoreControl,900);setTimeout(installStateDetector,950);setTimeout(stampBuild,900)},{once:true});
     window.addEventListener('load',()=>{setTimeout(installRestoreControl,500);setTimeout(installStateDetector,550);setTimeout(stampBuild,500)},{once:true});
