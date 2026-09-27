@@ -1,4 +1,4 @@
-/* NovaSol — Firebase bridge Build 516
+/* NovaSol — Firebase bridge Build 517
    Inicializa Firebase somente quando NOVASOL_FIREBASE_CONFIG estiver preenchido.
    Nesta build a restauração controlada entrega a cópia validada à rotina nativa de restauração do NovaSol.
    Não há sincronização automática. A restauração exige prévia e confirmação explícita.
@@ -248,21 +248,32 @@ if(!configured){
       const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw||''));
       return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');
     };
+    const canonicalDataText=value=>{
+      let p=value;
+      if(typeof value==='string'){try{p=JSON.parse(value)}catch{return value||''}}
+      if(!p||typeof p!=='object')return JSON.stringify(p??null);
+      const clean=structuredClone(p);
+      // savedAt records persistence activity, not a financial/data change.
+      delete clean.savedAt;
+      return JSON.stringify(clean);
+    };
     const compareCloudState=async()=>{
       const cloud=await api.readLatestCloudBackup();
       const local=summarizeLocal();
       const localSha=await shaText(local.raw);
+      const localDataSha=await shaText(canonicalDataText(local.parsed));
+      const cloudDataSha=await shaText(canonicalDataText(cloud.parsed));
       const localRevision=Math.max(1,Number(local.parsed?.dataRevision)||1);
       const cloudRevision=Math.max(1,Number(cloud.dataRevision||cloud.parsed?.dataRevision)||1);
       const localTime=Date.parse(local.parsed?.dataChangedAt||'')||0;
       const cloudTime=Date.parse(cloud.dataChangedAt||cloud.parsed?.dataChangedAt||'')||0;
       let state='conflict',label='Bases diferentes — revisão manual necessária';
-      if(localSha===cloud.sha256){state='equal';label='Bases iguais';}
+      if(localDataSha===cloudDataSha){state='equal';label='Bases iguais';}
       else if(localRevision>cloudRevision){state='local-newer';label='Este dispositivo é mais recente';}
       else if(cloudRevision>localRevision){state='cloud-newer';label='Nuvem é mais recente';}
       else if(localTime&&cloudTime&&localTime>cloudTime){state='local-newer';label='Este dispositivo é mais recente';}
       else if(localTime&&cloudTime&&cloudTime>localTime){state='cloud-newer';label='Nuvem é mais recente';}
-      return {state,label,localSha,cloudSha:cloud.sha256,localTime,cloudTime,localRevision,cloudRevision,local,cloud};
+      return {state,label,localSha,cloudSha:cloud.sha256,localDataSha,cloudDataSha,localTime,cloudTime,localRevision,cloudRevision,local,cloud};
     };
     const installStateDetector=()=>{
       const actions=document.querySelector('.novasol-cloud-auth-actions');
@@ -344,7 +355,7 @@ if(!configured){
     const stampBuild=()=>{
       const foot=document.querySelector('.side .foot');if(!foot)return;
       const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;
-      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 516');
+      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 517');
     };
     document.addEventListener('DOMContentLoaded',()=>{setTimeout(installRestoreControl,900);setTimeout(installStateDetector,950);setTimeout(stampBuild,900)},{once:true});
     window.addEventListener('load',()=>{setTimeout(installRestoreControl,500);setTimeout(installStateDetector,550);setTimeout(stampBuild,500)},{once:true});
