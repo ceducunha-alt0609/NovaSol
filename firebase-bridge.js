@@ -69,7 +69,7 @@ if(!configured){
         const payload={
           kind:'connectivity-test',
           app:'NovaSol',
-          build:507,
+          build:508,
           source:'web',
           updatedAt:serverTimestamp()
         };
