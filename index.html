@@ -8092,82 +8092,7 @@ document.getElementById('confirmRestoreDemo')?.addEventListener('click',()=>{doc
 </style>
 
 
-<!-- Build 497 — Movimentações: agrupamento visual pela data financeira efetiva -->
-<script id="novasol-v497-movement-day-regroup">
-(()=>{
-  if(window.__novaSolMovementDayRegroupV497)return;
-  window.__novaSolMovementDayRegroupV497=true;
 
-  const root=document.getElementById('movements');
-  if(!root)return;
-
-  function rowDayV497(r){
-    const effective=String(r?.dataset?.effectiveIsoDate||'').trim();
-    if(/^\d{4}-\d{2}-\d{2}$/.test(effective))return effective;
-    const iso=String(r?.dataset?.isoDate||'').trim();
-    if(/^\d{4}-\d{2}-\d{2}$/.test(iso))return iso;
-    const p=String(r?.dataset?.date||'').split('/');
-    return p.length===3?`${p[2]}-${p[1]}-${p[0]}`:'';
-  }
-
-  function titleV497(iso){
-    const [yy,mm,dd]=iso.split('-').map(Number);
-    const dt=new Date(yy,mm-1,dd,12);
-    const week=['DOMINGO','SEGUNDA-FEIRA','TERÇA-FEIRA','QUARTA-FEIRA','QUINTA-FEIRA','SEXTA-FEIRA','SÁBADO'];
-    const mon=['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
-    const now=new Date(),today=now.getFullYear()===yy&&now.getMonth()+1===mm&&now.getDate()===dd;
-    return `${today?'HOJE — ':''}${String(dd).padStart(2,'0')} ${mon[mm-1]}, ${week[dt.getDay()]}`;
-  }
-
-  function regroupV497(){
-    const rows=[...root.querySelectorAll('.tx-row')].filter(r=>rowDayV497(r));
-    if(!rows.length)return;
-
-    const groups=new Map();
-    rows.forEach(r=>{
-      const iso=rowDayV497(r);
-      if(!groups.has(iso))groups.set(iso,[]);
-      groups.get(iso).push(r);
-    });
-
-    const existing=[...root.querySelectorAll(':scope > .day-block')];
-    const byIso=new Map();
-    existing.forEach(b=>{
-      const first=b.querySelector('.tx-row');
-      const iso=first?rowDayV497(first):'';
-      if(iso&&!byIso.has(iso))byIso.set(iso,b);
-    });
-
-    groups.forEach((dayRows,iso)=>{
-      let block=byIso.get(iso);
-      if(!block){
-        block=document.createElement('div');
-        block.className='day-block';
-        block.innerHTML='<div class="day-title"><strong></strong><span></span></div>';
-        root.appendChild(block);
-        byIso.set(iso,block);
-      }
-      dayRows.forEach(r=>{if(r.parentElement!==block)block.appendChild(r)});
-      const strong=block.querySelector('.day-title strong');
-      const meta=block.querySelector('.day-title span');
-      if(strong)strong.textContent=titleV497(iso);
-      if(meta)meta.textContent=`${dayRows.length} movimento${dayRows.length===1?'':'s'}`;
-    });
-
-    [...root.querySelectorAll(':scope > .day-block')].forEach(b=>{
-      if(!b.querySelector('.tx-row'))b.remove();
-    });
-
-    try{typeof sortMovementDayBlocks==='function'&&sortMovementDayBlocks()}catch(_){}
-  }
-
-  window.novaSolRegroupMovementDaysV497=regroupV497;
-  document.addEventListener('novasol:movements-updated',()=>setTimeout(regroupV497,0));
-  document.addEventListener('novasol:restore-complete',()=>setTimeout(regroupV497,0));
-  document.querySelector('.nav[data-page="movements"]')?.addEventListener('click',()=>setTimeout(regroupV497,0));
-  setTimeout(regroupV497,180);
-})();
-</script>
 
 </body></html>`;
    statementModal?.classList.remove('open');
@@ -25058,5 +24983,40 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 </style>
 <script id="novasol-v496-version">
 (()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 496')}};f();document.addEventListener('DOMContentLoaded',f,{once:true});window.addEventListener('load',f,{once:true});setTimeout(f,500)})();
+</script>
+
+<!-- Build 498 — restaura a barra de ações de Movimentações sem alterar seus controladores -->
+<script id="novasol-v498-movement-toolbar-recovery">
+(()=>{
+  if(window.__novaSolMovementToolbarRecoveryV498)return;
+  window.__novaSolMovementToolbarRecoveryV498=true;
+
+  const open=id=>document.getElementById(id)?.classList.add('open');
+
+  document.getElementById('movPeriodIconBtn')?.addEventListener('click',()=>{
+    open('movPeriodModalV163');
+  },true);
+
+  document.getElementById('movAccountIconBtn')?.addEventListener('click',()=>{
+    // O listener original continua responsável por montar/sincronizar a lista.
+    open('movAccountModalV163');
+  },true);
+
+  document.getElementById('movPrintStatementBtn')?.addEventListener('click',()=>{
+    open('movStatementModal');
+  },true);
+
+  // Garantia de interação apenas na barra; não altera layout nem lógica.
+  const bar=document.querySelector('#movements .mov-action-top');
+  if(bar){
+    bar.style.position='relative';
+    bar.style.zIndex='20';
+    bar.style.pointerEvents='auto';
+    bar.querySelectorAll('button').forEach(b=>b.style.pointerEvents='auto');
+  }
+})();
+</script>
+<script id="novasol-v498-version">
+(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 498')}};f();document.addEventListener('DOMContentLoaded',f,{once:true});window.addEventListener('load',f,{once:true});setTimeout(f,500)})();
 </script>
 </body></html>
