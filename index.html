@@ -5404,36 +5404,45 @@ function novasolEnsureRecordSyncMeta(record,now){
   if(!record.updatedAt)record.updatedAt=record.createdAt||now;
   return record;
 }
-const NOVASOL_DATA_REV_KEY='novasol_data_revision_v2';
-const NOVASOL_DATA_REV_MIGRATION='novasol_data_revision_v2_migrated';
+const NOVASOL_DATA_REV_KEY='novasol_data_revision_v3';
+const NOVASOL_DATA_REV_MIGRATION='novasol_data_revision_v3_migrated';
 try{
  if(!localStorage.getItem(NOVASOL_DATA_REV_MIGRATION)){
-   localStorage.setItem(NOVASOL_DATA_REV_KEY,JSON.stringify({revision:1,dataChangedAt:null}));
+   // New sync-generation model. Start clean; cloud restore/comparison establishes lineage.
+   localStorage.setItem(NOVASOL_DATA_REV_KEY,JSON.stringify({revision:1,dataChangedAt:null,dirty:false}));
    localStorage.setItem(NOVASOL_DATA_REV_MIGRATION,'1');
  }
 }catch(e){}
 function novasolReadDataRevision(){
  try{
    const x=JSON.parse(localStorage.getItem(NOVASOL_DATA_REV_KEY)||'null');
-   if(x&&Number.isInteger(Number(x.revision))&&Number(x.revision)>=1)return {revision:Number(x.revision),dataChangedAt:x.dataChangedAt||null};
+   if(x&&Number.isInteger(Number(x.revision))&&Number(x.revision)>=1)return {revision:Number(x.revision),dataChangedAt:x.dataChangedAt||null,dirty:x.dirty===true};
  }catch(e){}
- return {revision:1,dataChangedAt:null};
+ return {revision:1,dataChangedAt:null,dirty:false};
 }
 function novasolWriteDataRevision(meta){
- try{localStorage.setItem(NOVASOL_DATA_REV_KEY,JSON.stringify(meta))}catch(e){}
- return meta;
+ const normalized={revision:Math.max(1,Number(meta?.revision)||1),dataChangedAt:meta?.dataChangedAt||null,dirty:meta?.dirty===true};
+ try{localStorage.setItem(NOVASOL_DATA_REV_KEY,JSON.stringify(normalized))}catch(e){}
+ return normalized;
 }
 function novasolMarkRealDataChange(){
  if(window.__novasolPersistenceV225?.hydrating||window.__novasolPersistenceV225?.restoring)return novasolReadDataRevision();
  const cur=novasolReadDataRevision();
- return novasolWriteDataRevision({revision:Math.max(1,Number(cur.revision)||1)+1,dataChangedAt:new Date().toISOString()});
+ // A revision is one unsynchronized generation, not an autosave counter.
+ // Further local saves in the same dirty generation keep the same revision.
+ if(cur.dirty)return cur;
+ return novasolWriteDataRevision({revision:Math.max(1,Number(cur.revision)||1)+1,dataChangedAt:new Date().toISOString(),dirty:true});
 }
 function novasolAdoptPayloadRevision(payload){
  if(!payload||typeof payload!=='object')return;
  const revision=Math.max(1,Number(payload.dataRevision)||1);
  const dataChangedAt=payload.dataChangedAt||null;
- novasolWriteDataRevision({revision,dataChangedAt});
+ novasolWriteDataRevision({revision,dataChangedAt,dirty:false});
 }
+window.novaSolRevisionGeneration={
+ read:novasolReadDataRevision,
+ adopt:(revision,dataChangedAt=null)=>novasolWriteDataRevision({revision:Math.max(1,Number(revision)||1),dataChangedAt:dataChangedAt||null,dirty:false})
+};
 function novasolBusinessSignature(payload){
  if(!payload||typeof payload!=='object')return '';
  // Functional signature only: presentation HTML and sync bookkeeping are not data changes.
