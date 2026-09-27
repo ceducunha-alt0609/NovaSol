@@ -1,7 +1,7 @@
-/* NovaSol — Firebase bridge Build 510
+/* NovaSol — Firebase bridge Build 511
    Inicializa Firebase somente quando NOVASOL_FIREBASE_CONFIG estiver preenchido.
-   Nesta build há diagnóstico, cópia manual e conferência somente-leitura da última cópia na nuvem.
-   Não há sincronização automática nem restauração automática.
+   Nesta build há diagnóstico, cópia manual, conferência e restauração manual controlada da última cópia na nuvem.
+   Não há sincronização automática. A restauração exige prévia, confirmação explícita e cria uma cópia local de segurança.
 */
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import {
@@ -78,7 +78,7 @@ if(!configured){
         if(!snap.exists())throw new Error('O diagnóstico foi enviado, mas não pôde ser lido de volta.');
         return {ok:true,path:ref.path,data:snap.data()};
       },
-      async previewLatestCloudBackup(){
+      async readLatestCloudBackup(){
         const user=auth.currentUser;
         if(!user)throw new Error('Faça login com Google antes de conferir a nuvem.');
 
@@ -123,16 +123,17 @@ if(!configured){
         };
 
         return {
-          ok:true,
-          verified:true,
-          snapshotId,
+          ok:true,verified:true,snapshotId,rawState,parsed,
           schema:Number(parsed?.schema)||null,
           localSavedAt:parsed?.savedAt||meta.localSavedAt||null,
           byteLength:new TextEncoder().encode(rawState).length,
-          chunkCount:count,
-          sha256,
-          summary
+          chunkCount:count,sha256,summary
         };
+      },
+      async previewLatestCloudBackup(){
+        const result=await this.readLatestCloudBackup();
+        const {rawState,parsed,...safe}=result;
+        return safe;
       },
       async createCloudBackup(rawState,meta={}){
         const user=auth.currentUser;
@@ -224,6 +225,80 @@ if(!configured){
       configProjectId:cfg.projectId
     };
     window.NovaSolCloud=api;
+
+    const summarizeLocal=()=>{
+      const raw=localStorage.getItem('novasol_marco_zero_state_v1')||'';
+      let p={};try{p=raw?JSON.parse(raw):{}}catch{}
+      return {raw,parsed:p,summary:{
+        accounts:Array.isArray(p?.accounts)?p.accounts.length:0,
+        cards:Array.isArray(p?.cards)?p.cards.length:0,
+        investments:Array.isArray(p?.investments)?p.investments.length:0,
+        debts:Array.isArray(p?.debts)?p.debts.length:0,
+        movements:Array.isArray(p?.movements)?p.movements.length:0
+      }};
+    };
+    const fmtDate=v=>{try{return v?new Date(v).toLocaleString('pt-BR'):'não informada'}catch{return 'não informada'}};
+    const installRestoreControl=()=>{
+      const actions=document.querySelector('.novasol-cloud-auth-actions');
+      if(!actions||actions.querySelector('.novasol-cloud-restore'))return;
+      const btn=document.createElement('button');
+      btn.type='button';btn.className='novasol-cloud-restore';btn.textContent='Preparar restauração';
+      actions.appendChild(btn);
+      btn.addEventListener('click',async()=>{
+        const msg=document.querySelector('.novasol-cloud-auth-msg');
+        if(msg){msg.textContent='';msg.classList.remove('show','success')}
+        btn.disabled=true;btn.textContent='Lendo e comparando...';
+        try{
+          const cloud=await api.readLatestCloudBackup();
+          const local=summarizeLocal();
+          let overlay=document.getElementById('novasol-cloud-restore-overlay');
+          if(overlay)overlay.remove();
+          overlay=document.createElement('div');overlay.id='novasol-cloud-restore-overlay';
+          overlay.style.cssText='position:fixed;inset:0;background:rgba(2,12,22,.78);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';
+          const cs=cloud.summary,ls=local.summary;
+          overlay.innerHTML='<div style="width:min(720px,96vw);background:#0d2638;border:1px solid #315b77;border-radius:16px;padding:22px;color:#eaf5ff;box-shadow:0 24px 70px rgba(0,0,0,.45)">'+
+            '<h3 style="margin:0 0 6px">Restauração controlada da nuvem</h3>'+
+            '<p style="margin:0 0 18px;color:#a9c4d6">Nada foi alterado. Confira as duas bases antes de continuar.</p>'+
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
+              '<div style="padding:14px;border:1px solid #284c64;border-radius:12px"><b>Este dispositivo</b><div style="margin-top:8px;line-height:1.7">'+ls.movements+' lançamentos<br>'+ls.accounts+' conta(s)<br>'+ls.cards+' cartão(ões)<br>Salva: '+fmtDate(local.parsed?.savedAt)+'</div></div>'+
+              '<div style="padding:14px;border:1px solid #28765d;border-radius:12px"><b>Cópia na nuvem ✓</b><div style="margin-top:8px;line-height:1.7">'+cs.movements+' lançamentos<br>'+cs.accounts+' conta(s)<br>'+cs.cards+' cartão(ões)<br>Salva: '+fmtDate(cloud.localSavedAt)+'<br>SHA-256 OK</div></div>'+
+            '</div>'+
+            '<div style="margin-top:14px;padding:12px;border-radius:10px;background:#102f42;color:#bcd4e3">Ao aplicar, o NovaSol guardará primeiro uma cópia local de segurança do estado atual. Só depois substituirá a base local pela cópia validada da nuvem e recarregará o app.</div>'+
+            '<label style="display:flex;gap:9px;align-items:flex-start;margin:16px 0"><input type="checkbox" class="ns-confirm-restore" style="margin-top:3px"> <span>Confirmo que quero substituir os dados deste dispositivo pela cópia da nuvem mostrada acima.</span></label>'+
+            '<div style="display:flex;justify-content:flex-end;gap:10px"><button type="button" class="ns-cancel-restore">Cancelar</button><button type="button" class="ns-apply-restore" disabled>Aplicar cópia da nuvem</button></div>'+
+          '</div>';
+          document.body.appendChild(overlay);
+          const check=overlay.querySelector('.ns-confirm-restore'),apply=overlay.querySelector('.ns-apply-restore');
+          check.addEventListener('change',()=>apply.disabled=!check.checked);
+          overlay.querySelector('.ns-cancel-restore').addEventListener('click',()=>overlay.remove());
+          apply.addEventListener('click',()=>{
+            if(!check.checked)return;
+            try{
+              const current=localStorage.getItem('novasol_marco_zero_state_v1');
+              if(current){
+                localStorage.setItem('novasol_pre_cloud_restore_v1',current);
+                localStorage.setItem('novasol_pre_cloud_restore_meta_v1',JSON.stringify({savedAt:new Date().toISOString(),snapshotId:cloud.snapshotId,sha256:cloud.sha256}));
+              }
+              localStorage.setItem('novasol_marco_zero_state_v1',cloud.rawState);
+              location.reload();
+            }catch(e){
+              alert('A restauração não foi aplicada: '+(e?.message||e));
+            }
+          });
+        }catch(e){
+          if(msg){msg.textContent='Falha ao preparar restauração. '+(e?.message||e);msg.classList.add('show')}
+        }finally{btn.disabled=false;btn.textContent='Preparar restauração'}
+      });
+    };
+    const stampBuild=()=>{
+      const foot=document.querySelector('.side .foot');if(!foot)return;
+      const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;
+      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 511');
+    };
+    document.addEventListener('DOMContentLoaded',()=>{setTimeout(installRestoreControl,900);setTimeout(stampBuild,900)},{once:true});
+    window.addEventListener('load',()=>{setTimeout(installRestoreControl,500);setTimeout(stampBuild,500)},{once:true});
+    window.addEventListener('novasol:auth-changed',()=>setTimeout(installRestoreControl,200));
+    setTimeout(()=>{installRestoreControl();stampBuild()},1300);
     emit('ready',{projectId:cfg.projectId});
 
     onAuthStateChanged(auth,user=>{
