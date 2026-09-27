@@ -1,4 +1,4 @@
-/* NovaSol — Firebase bridge Build 519
+/* NovaSol — Firebase bridge Build 520
    Inicializa Firebase somente quando NOVASOL_FIREBASE_CONFIG estiver preenchido.
    Nesta build a restauração controlada entrega a cópia validada à rotina nativa de restauração do NovaSol.
    Não há sincronização automática. A restauração exige prévia e confirmação explícita.
@@ -173,7 +173,7 @@ if(!configured){
         batch.set(backupRef,{
           kind:'novasol-cloud-backup',
           app:'NovaSol',
-          build:516,
+          build:520,
           schema:Number(meta.schema)||null,
           localSavedAt:meta.localSavedAt||null,
           dataRevision:Math.max(1,Number(meta.dataRevision)||1),
@@ -190,7 +190,7 @@ if(!configured){
 
         batch.set(doc(db,'users',user.uid,'cloudState','current'),{
           latestSnapshotId:snapshotId,
-          build:516,
+          build:520,
           schema:Number(meta.schema)||null,
           dataRevision:Math.max(1,Number(meta.dataRevision)||1),
           dataChangedAt:meta.dataChangedAt||null,
@@ -272,12 +272,21 @@ if(!configured){
       const localSha=await shaText(local.raw);
       const localDataSha=await shaText(canonicalDataText(local.parsed));
       const cloudDataSha=await shaText(canonicalDataText(cloud.parsed));
-      const localRevision=Math.max(1,Number(local.parsed?.dataRevision)||1);
       const cloudRevision=Math.max(1,Number(cloud.dataRevision||cloud.parsed?.dataRevision)||1);
-      const localTime=Date.parse(local.parsed?.dataChangedAt||'')||0;
+      const generation=window.novaSolRevisionGeneration?.read?.()||null;
+      let localRevision=Math.max(1,Number(generation?.revision)||Number(local.parsed?.dataRevision)||1);
+      let localTime=Date.parse(generation?.dataChangedAt||local.parsed?.dataChangedAt||'')||0;
       const cloudTime=Date.parse(cloud.dataChangedAt||cloud.parsed?.dataChangedAt||'')||0;
       let state='conflict',label='Bases diferentes — revisão manual necessária';
-      if(localDataSha===cloudDataSha){state='equal';label='Bases iguais';}
+      if(localDataSha===cloudDataSha){
+        if(window.novaSolRevisionGeneration?.adopt)window.novaSolRevisionGeneration.adopt(cloudRevision,cloud.dataChangedAt||cloud.parsed?.dataChangedAt||null);
+        localRevision=cloudRevision;localTime=cloudTime;
+        state='equal';label='Bases iguais';
+      } else if(generation && !generation.dirty && localRevision===cloudRevision && window.novaSolRevisionGeneration?.markFromBase){
+        const marked=window.novaSolRevisionGeneration.markFromBase(cloudRevision);
+        localRevision=marked.revision;localTime=Date.parse(marked.dataChangedAt||'')||0;
+        state='local-newer';label='Este dispositivo é mais recente';
+      }
       else if(localRevision>cloudRevision){state='local-newer';label='Este dispositivo é mais recente';}
       else if(cloudRevision>localRevision){state='cloud-newer';label='Nuvem é mais recente';}
       else if(localTime&&cloudTime&&localTime>cloudTime){state='local-newer';label='Este dispositivo é mais recente';}
@@ -364,7 +373,7 @@ if(!configured){
     const stampBuild=()=>{
       const foot=document.querySelector('.side .foot');if(!foot)return;
       const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;
-      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 519');
+      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 520');
     };
     document.addEventListener('DOMContentLoaded',()=>{setTimeout(installRestoreControl,900);setTimeout(installStateDetector,950);setTimeout(stampBuild,900)},{once:true});
     window.addEventListener('load',()=>{setTimeout(installRestoreControl,500);setTimeout(installStateDetector,550);setTimeout(stampBuild,500)},{once:true});
