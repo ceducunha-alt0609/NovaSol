@@ -1,7 +1,7 @@
-/* NovaSol — Firebase bridge Build 511
+/* NovaSol — Firebase bridge Build 512
    Inicializa Firebase somente quando NOVASOL_FIREBASE_CONFIG estiver preenchido.
-   Nesta build há diagnóstico, cópia manual, conferência e restauração manual controlada da última cópia na nuvem.
-   Não há sincronização automática. A restauração exige prévia, confirmação explícita e cria uma cópia local de segurança.
+   Nesta build a restauração controlada entrega a cópia validada à rotina nativa de restauração do NovaSol.
+   Não há sincronização automática. A restauração exige prévia e confirmação explícita.
 */
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import {
@@ -279,8 +279,11 @@ if(!configured){
                 localStorage.setItem('novasol_pre_cloud_restore_v1',current);
                 localStorage.setItem('novasol_pre_cloud_restore_meta_v1',JSON.stringify({savedAt:new Date().toISOString(),snapshotId:cloud.snapshotId,sha256:cloud.sha256}));
               }
-              localStorage.setItem('novasol_marco_zero_state_v1',cloud.rawState);
-              location.reload();
+              if(typeof window.novaSolApplyValidatedCloudBackup!=='function')throw new Error('A rotina nativa de restauração ainda não está disponível nesta sessão. Atualize a página.');
+              const result=window.novaSolApplyValidatedCloudBackup(cloud.parsed,{snapshotId:cloud.snapshotId,sha256:cloud.sha256});
+              if(!result?.ok)throw new Error(result?.message||'A rotina nativa não confirmou a restauração.');
+              overlay.remove();
+              if(msg){msg.textContent='✓ Cópia da nuvem aplicada pela rotina nativa: '+result.movements+' lançamentos · '+result.accounts+' conta(s) · '+result.cards+' cartão(ões).';msg.classList.add('show','success')}
             }catch(e){
               alert('A restauração não foi aplicada: '+(e?.message||e));
             }
