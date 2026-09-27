@@ -25132,6 +25132,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 #backupSettingsModal .novasol-cloud-auth-actions button{min-height:32px!important;height:32px!important;padding:0 13px!important;width:auto!important;min-width:0!important;border-radius:8px!important;font-size:10px!important;font-weight:700!important}
 #backupSettingsModal .novasol-cloud-auth-msg{display:none;margin-top:8px;padding:8px 9px;border-radius:8px;background:rgba(244,207,99,.08);border:1px solid rgba(244,207,99,.24);color:#f4cf63;font-size:9px;line-height:1.4}
 #backupSettingsModal .novasol-cloud-auth-msg.show{display:block}
+#backupSettingsModal .novasol-cloud-auth-msg.success{background:rgba(78,225,154,.08);border-color:rgba(78,225,154,.28);color:#4ee19a}
 @media(max-width:700px){
   #backupSettingsModal .novasol-cloud-auth-head{display:grid;grid-template-columns:1fr auto}
   #backupSettingsModal .novasol-cloud-auth-actions{display:flex}
@@ -25156,7 +25157,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     const target=m.querySelector('.novasol-backup-status');if(!target)return null;
     box=document.createElement('div');
     box.className='novasol-cloud-auth';
-    box.innerHTML='<div class="novasol-cloud-auth-head"><div class="novasol-cloud-auth-title"><div class="novasol-cloud-auth-icon">G</div><div><h4>Conta Google</h4><p>Identidade usada para a futura sincronização PC ↔ notebook. Seus dados financeiros ainda permanecem somente neste dispositivo.</p></div></div><span class="novasol-cloud-auth-badge">Verificando</span></div><div class="novasol-cloud-auth-user">Verificando conta...</div><div class="novasol-cloud-auth-actions"><button type="button" class="primary novasol-cloud-login">Entrar com Google</button></div><div class="novasol-cloud-auth-msg"></div>';
+    box.innerHTML='<div class="novasol-cloud-auth-head"><div class="novasol-cloud-auth-title"><div class="novasol-cloud-auth-icon">G</div><div><h4>Conta Google</h4><p>Identidade usada para a futura sincronização PC ↔ notebook. Seus dados financeiros ainda permanecem somente neste dispositivo.</p></div></div><span class="novasol-cloud-auth-badge">Verificando</span></div><div class="novasol-cloud-auth-user">Verificando conta...</div><div class="novasol-cloud-auth-actions"><button type="button" class="primary novasol-cloud-login">Entrar com Google</button><button type="button" class="novasol-cloud-test" style="display:none">Testar conexão</button></div><div class="novasol-cloud-auth-msg"></div>';
     target.parentNode.insertBefore(box,target);
     box.querySelector('.novasol-cloud-login')?.addEventListener('click',async()=>{
       const api=window.NovaSolCloud,btn=box.querySelector('.novasol-cloud-login'),msg=box.querySelector('.novasol-cloud-auth-msg');
@@ -25167,13 +25168,29 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
       catch(e){if(msg){msg.textContent=errorText(e);msg.classList.add('show')}}
       finally{btn.disabled=false}
     });
+    box.querySelector('.novasol-cloud-test')?.addEventListener('click',async()=>{
+      const api=window.NovaSolCloud,testBtn=box.querySelector('.novasol-cloud-test'),msg=box.querySelector('.novasol-cloud-auth-msg');
+      if(msg){msg.textContent='';msg.classList.remove('show','success')}
+      if(!api?.currentUser?.()){if(msg){msg.textContent='Entre com sua conta Google antes de testar.';msg.classList.add('show')}return}
+      testBtn.disabled=true;testBtn.textContent='Testando...';
+      try{
+        const result=await api.testConnection();
+        if(!result?.ok)throw new Error('Teste sem confirmação de retorno.');
+        if(msg){msg.textContent='✓ Firestore conectado e regras validadas. Nenhum dado financeiro foi enviado.';msg.classList.add('show','success')}
+      }catch(e){
+        let text='Falha no teste do Firestore.';
+        if(String(e?.code||'').includes('permission-denied'))text='As regras do Firestore bloquearam o teste. Verifique se foram publicadas.';
+        else if(e?.message)text+=' '+e.message;
+        if(msg){msg.textContent=text;msg.classList.add('show')}
+      }finally{testBtn.disabled=false;testBtn.textContent='Testar conexão'}
+    });
     return box;
   }
   function render(user){
     const box=ensure();if(!box)return;
-    const badge=box.querySelector('.novasol-cloud-auth-badge'),info=box.querySelector('.novasol-cloud-auth-user'),btn=box.querySelector('.novasol-cloud-login');
-    if(user){badge.textContent='Conectado ✓';badge.classList.add('connected');info.textContent=(user.displayName||'Usuário')+(user.email?' • '+user.email:'');btn.textContent='Sair da conta';}
-    else{badge.textContent='Modo local';badge.classList.remove('connected');info.textContent='Nenhuma conta conectada. O NovaSol continua funcionando localmente.';btn.textContent='Entrar com Google';}
+    const badge=box.querySelector('.novasol-cloud-auth-badge'),info=box.querySelector('.novasol-cloud-auth-user'),btn=box.querySelector('.novasol-cloud-login'),testBtn=box.querySelector('.novasol-cloud-test');
+    if(user){badge.textContent='Conectado ✓';badge.classList.add('connected');info.textContent=(user.displayName||'Usuário')+(user.email?' • '+user.email:'');btn.textContent='Sair da conta';if(testBtn)testBtn.style.display='inline-flex';}
+    else{badge.textContent='Modo local';badge.classList.remove('connected');info.textContent='Nenhuma conta conectada. O NovaSol continua funcionando localmente.';btn.textContent='Entrar com Google';if(testBtn)testBtn.style.display='none';}
   }
   function renderFromApi(){const api=window.NovaSolCloud;if(!api?.configured){const box=ensure();if(box){box.querySelector('.novasol-cloud-auth-badge').textContent='Não configurado';box.querySelector('.novasol-cloud-auth-user').textContent='Firebase não configurado.'}return}render(api.currentUser?.()||null)}
   window.addEventListener('novasol:cloud-status',()=>setTimeout(renderFromApi,0));
@@ -25182,7 +25199,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   setTimeout(()=>{ensure();renderFromApi()},650);
 })();
 </script>
-<script id="novasol-v506-version">
-(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 506')}};f();document.addEventListener('DOMContentLoaded',f,{once:true});window.addEventListener('load',f,{once:true});setTimeout(f,500)})();
+<script id="novasol-v507-version">
+(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 507')}};f();document.addEventListener('DOMContentLoaded',f,{once:true});window.addEventListener('load',f,{once:true});setTimeout(f,500)})();
 </script>
 </body></html>
