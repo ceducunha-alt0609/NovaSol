@@ -5436,8 +5436,21 @@ function novasolAdoptPayloadRevision(payload){
 }
 function novasolBusinessSignature(payload){
  if(!payload||typeof payload!=='object')return '';
+ // Functional signature only: presentation HTML and sync bookkeeping are not data changes.
+ const clean=(value,key='')=>{
+   if(Array.isArray(value))return value.map(v=>clean(v));
+   if(value&&typeof value==='object'){
+     const out={};
+     Object.keys(value).sort().forEach(k=>{
+       if(k==='html'||k==='syncId'||k==='createdAt'||k==='updatedAt')return;
+       out[k]=clean(value[k],k);
+     });
+     return out;
+   }
+   return value;
+ };
  const business={};
- ['debts','accounts','investments','previdencias','cards','holders','subscriptions','movements'].forEach(k=>business[k]=Array.isArray(payload[k])?payload[k]:[]);
+ ['debts','accounts','investments','previdencias','cards','holders','subscriptions','movements'].forEach(k=>business[k]=clean(Array.isArray(payload[k])?payload[k]:[]));
  return JSON.stringify(business);
 }
 function novasolEnsurePayloadSyncMeta(payload){
