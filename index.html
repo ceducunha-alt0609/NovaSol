@@ -8091,6 +8091,84 @@ document.getElementById('confirmRestoreDemo')?.addEventListener('click',()=>{doc
 @media(max-width:680px){#health.content{padding-top:18px;padding-bottom:18px}#health .health-head{align-items:flex-start;flex-direction:column}#health .health-period{width:100%;justify-content:center}#health .health-kpis,#health .health-actions,#health .decision-summary-v153{grid-template-columns:1fr}#health .health-priority{grid-template-columns:30px 1fr}#health .health-priority .tag{grid-column:2;justify-self:start}#health .decision-head-v153{flex-direction:column;gap:8px}#health .decision-demand-v153 .top{flex-direction:column;gap:4px}#health .decision-demand-v153 .top em{white-space:normal}}
 </style>
 
+
+<!-- Build 497 — Movimentações: agrupamento visual pela data financeira efetiva -->
+<script id="novasol-v497-movement-day-regroup">
+(()=>{
+  if(window.__novaSolMovementDayRegroupV497)return;
+  window.__novaSolMovementDayRegroupV497=true;
+
+  const root=document.getElementById('movements');
+  if(!root)return;
+
+  function rowDayV497(r){
+    const effective=String(r?.dataset?.effectiveIsoDate||'').trim();
+    if(/^\d{4}-\d{2}-\d{2}$/.test(effective))return effective;
+    const iso=String(r?.dataset?.isoDate||'').trim();
+    if(/^\d{4}-\d{2}-\d{2}$/.test(iso))return iso;
+    const p=String(r?.dataset?.date||'').split('/');
+    return p.length===3?`${p[2]}-${p[1]}-${p[0]}`:'';
+  }
+
+  function titleV497(iso){
+    const [yy,mm,dd]=iso.split('-').map(Number);
+    const dt=new Date(yy,mm-1,dd,12);
+    const week=['DOMINGO','SEGUNDA-FEIRA','TERÇA-FEIRA','QUARTA-FEIRA','QUINTA-FEIRA','SEXTA-FEIRA','SÁBADO'];
+    const mon=['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+    const now=new Date(),today=now.getFullYear()===yy&&now.getMonth()+1===mm&&now.getDate()===dd;
+    return `${today?'HOJE — ':''}${String(dd).padStart(2,'0')} ${mon[mm-1]}, ${week[dt.getDay()]}`;
+  }
+
+  function regroupV497(){
+    const rows=[...root.querySelectorAll('.tx-row')].filter(r=>rowDayV497(r));
+    if(!rows.length)return;
+
+    const groups=new Map();
+    rows.forEach(r=>{
+      const iso=rowDayV497(r);
+      if(!groups.has(iso))groups.set(iso,[]);
+      groups.get(iso).push(r);
+    });
+
+    const existing=[...root.querySelectorAll(':scope > .day-block')];
+    const byIso=new Map();
+    existing.forEach(b=>{
+      const first=b.querySelector('.tx-row');
+      const iso=first?rowDayV497(first):'';
+      if(iso&&!byIso.has(iso))byIso.set(iso,b);
+    });
+
+    groups.forEach((dayRows,iso)=>{
+      let block=byIso.get(iso);
+      if(!block){
+        block=document.createElement('div');
+        block.className='day-block';
+        block.innerHTML='<div class="day-title"><strong></strong><span></span></div>';
+        root.appendChild(block);
+        byIso.set(iso,block);
+      }
+      dayRows.forEach(r=>{if(r.parentElement!==block)block.appendChild(r)});
+      const strong=block.querySelector('.day-title strong');
+      const meta=block.querySelector('.day-title span');
+      if(strong)strong.textContent=titleV497(iso);
+      if(meta)meta.textContent=`${dayRows.length} movimento${dayRows.length===1?'':'s'}`;
+    });
+
+    [...root.querySelectorAll(':scope > .day-block')].forEach(b=>{
+      if(!b.querySelector('.tx-row'))b.remove();
+    });
+
+    try{typeof sortMovementDayBlocks==='function'&&sortMovementDayBlocks()}catch(_){}
+  }
+
+  window.novaSolRegroupMovementDaysV497=regroupV497;
+  document.addEventListener('novasol:movements-updated',()=>setTimeout(regroupV497,0));
+  document.addEventListener('novasol:restore-complete',()=>setTimeout(regroupV497,0));
+  document.querySelector('.nav[data-page="movements"]')?.addEventListener('click',()=>setTimeout(regroupV497,0));
+  setTimeout(regroupV497,180);
+})();
+</script>
+
 </body></html>`;
    statementModal?.classList.remove('open');
    document.getElementById('novasolPrintFrame')?.remove();
