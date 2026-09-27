@@ -1,4 +1,4 @@
-/* NovaSol — Firebase bridge Build 512
+/* NovaSol — Firebase bridge Build 513
    Inicializa Firebase somente quando NOVASOL_FIREBASE_CONFIG estiver preenchido.
    Nesta build a restauração controlada entrega a cópia validada à rotina nativa de restauração do NovaSol.
    Não há sincronização automática. A restauração exige prévia e confirmação explícita.
@@ -238,6 +238,44 @@ if(!configured){
       }};
     };
     const fmtDate=v=>{try{return v?new Date(v).toLocaleString('pt-BR'):'não informada'}catch{return 'não informada'}};
+    const shaText=async raw=>{
+      const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw||''));
+      return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');
+    };
+    const compareCloudState=async()=>{
+      const cloud=await api.readLatestCloudBackup();
+      const local=summarizeLocal();
+      const localSha=await shaText(local.raw);
+      const localTime=Date.parse(local.parsed?.savedAt||'')||0;
+      const cloudTime=Date.parse(cloud.localSavedAt||'')||0;
+      let state='conflict',label='Bases diferentes — revisão manual necessária';
+      if(localSha===cloud.sha256){state='equal';label='Bases iguais';}
+      else if(localTime&&cloudTime&&localTime>cloudTime){state='local-newer';label='Este dispositivo é mais recente';}
+      else if(localTime&&cloudTime&&cloudTime>localTime){state='cloud-newer';label='Nuvem é mais recente';}
+      return {state,label,localSha,cloudSha:cloud.sha256,localTime,cloudTime,local,cloud};
+    };
+    const installStateDetector=()=>{
+      const actions=document.querySelector('.novasol-cloud-auth-actions');
+      if(!actions||actions.querySelector('.novasol-cloud-compare'))return;
+      const btn=document.createElement('button');
+      btn.type='button';btn.className='novasol-cloud-compare';btn.textContent='Comparar dispositivo ↔ nuvem';
+      actions.appendChild(btn);
+      btn.addEventListener('click',async()=>{
+        const msg=document.querySelector('.novasol-cloud-auth-msg');
+        btn.disabled=true;btn.textContent='Comparando...';
+        try{
+          const r=await compareCloudState();
+          const when=t=>t?new Date(t).toLocaleString('pt-BR'):'não informada';
+          if(msg){
+            msg.textContent='✓ '+r.label+' · local '+r.local.summary.movements+' lanç. ('+when(r.localTime)+') · nuvem '+r.cloud.summary.movements+' lanç. ('+when(r.cloudTime)+')';
+            msg.classList.add('show',r.state==='equal'?'success':'');
+          }
+          window.dispatchEvent(new CustomEvent('novasol:cloud-state-compared',{detail:{state:r.state,label:r.label,localSha:r.localSha,cloudSha:r.cloudSha,localTime:r.localTime,cloudTime:r.cloudTime}}));
+        }catch(e){
+          if(msg){msg.textContent='Falha ao comparar dispositivo e nuvem. '+(e?.message||e);msg.classList.add('show')}
+        }finally{btn.disabled=false;btn.textContent='Comparar dispositivo ↔ nuvem'}
+      });
+    };
     const installRestoreControl=()=>{
       const actions=document.querySelector('.novasol-cloud-auth-actions');
       if(!actions||actions.querySelector('.novasol-cloud-restore'))return;
@@ -296,12 +334,12 @@ if(!configured){
     const stampBuild=()=>{
       const foot=document.querySelector('.side .foot');if(!foot)return;
       const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;
-      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 512');
+      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 513');
     };
-    document.addEventListener('DOMContentLoaded',()=>{setTimeout(installRestoreControl,900);setTimeout(stampBuild,900)},{once:true});
-    window.addEventListener('load',()=>{setTimeout(installRestoreControl,500);setTimeout(stampBuild,500)},{once:true});
-    window.addEventListener('novasol:auth-changed',()=>setTimeout(installRestoreControl,200));
-    setTimeout(()=>{installRestoreControl();stampBuild()},1300);
+    document.addEventListener('DOMContentLoaded',()=>{setTimeout(installRestoreControl,900);setTimeout(installStateDetector,950);setTimeout(stampBuild,900)},{once:true});
+    window.addEventListener('load',()=>{setTimeout(installRestoreControl,500);setTimeout(installStateDetector,550);setTimeout(stampBuild,500)},{once:true});
+    window.addEventListener('novasol:auth-changed',()=>{setTimeout(installRestoreControl,200);setTimeout(installStateDetector,250)});
+    setTimeout(()=>{installRestoreControl();installStateDetector();stampBuild()},1300);
     emit('ready',{projectId:cfg.projectId});
 
     onAuthStateChanged(auth,user=>{
