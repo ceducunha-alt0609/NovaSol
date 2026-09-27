@@ -1,4 +1,4 @@
-const CACHE='novasol-v1.0-build512-pwa33';
+const CACHE='novasol-v1.0-build512-pwa34';
 const BASE='/NovaSol/';
 const SHELL=[BASE,BASE+'index.html',BASE+'manifest.json',BASE+'firebase-config.js?v=512',BASE+'firebase-bridge.js?v=512',BASE+'icons/icon-192.png',BASE+'icons/icon-512.png'];
 
