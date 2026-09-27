@@ -1,10 +1,10 @@
 /* NovaSol — configuração Firebase
-   Build 502: projeto Firebase exclusivo do NovaSol conectado.
+   Build 505: projeto Firebase exclusivo do NovaSol conectado.
    Esta configuração pública do app Web permite inicializar o SDK no navegador.
    Nenhuma leitura/gravação financeira é feita por este arquivo.
 */
 window.NOVASOL_FIREBASE_CONFIG = {
-  apiKey: "AIzaSyAPetHeN-Bm8oqD4w-TVeD0aMaSa8RMM5A",
+  apiKey: "AIzaSyAPetHeN-Bm8oqD4w-TVeDOaMaSa8RMM5A",
   authDomain: "novasol-e47fd.firebaseapp.com",
   projectId: "novasol-e47fd",
   storageBucket: "novasol-e47fd.firebasestorage.app",
