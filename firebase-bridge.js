@@ -1,6 +1,6 @@
-/* NovaSol — Firebase bridge Build 508
+/* NovaSol — Firebase bridge Build 510
    Inicializa Firebase somente quando NOVASOL_FIREBASE_CONFIG estiver preenchido.
-   Nesta build há diagnóstico e cópia manual do estado local para a nuvem.
+   Nesta build há diagnóstico, cópia manual e conferência somente-leitura da última cópia na nuvem.
    Não há sincronização automática nem restauração automática.
 */
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
@@ -77,6 +77,62 @@ if(!configured){
         const snap=await getDoc(ref);
         if(!snap.exists())throw new Error('O diagnóstico foi enviado, mas não pôde ser lido de volta.');
         return {ok:true,path:ref.path,data:snap.data()};
+      },
+      async previewLatestCloudBackup(){
+        const user=auth.currentUser;
+        if(!user)throw new Error('Faça login com Google antes de conferir a nuvem.');
+
+        const stateRef=doc(db,'users',user.uid,'cloudState','current');
+        const stateSnap=await getDoc(stateRef);
+        if(!stateSnap.exists())throw new Error('Ainda não existe uma cópia registrada na nuvem.');
+
+        const state=stateSnap.data()||{};
+        const snapshotId=String(state.latestSnapshotId||'');
+        if(!snapshotId)throw new Error('A referência da última cópia está vazia.');
+
+        const backupRef=doc(db,'users',user.uid,'cloudBackups',snapshotId);
+        const metaSnap=await getDoc(backupRef);
+        if(!metaSnap.exists())throw new Error('O manifesto da última cópia não foi encontrado.');
+
+        const meta=metaSnap.data()||{};
+        const count=Number(meta.chunkCount||state.chunkCount||0);
+        if(!Number.isInteger(count)||count<1)throw new Error('A cópia não informa uma quantidade válida de blocos.');
+
+        const returned=[];
+        for(let i=0;i<count;i++){
+          const snap=await getDoc(doc(db,'users',user.uid,'cloudBackups',snapshotId,'chunks',String(i).padStart(4,'0')));
+          if(!snap.exists())throw new Error('A cópia está incompleta na nuvem (bloco '+(i+1)+').');
+          returned.push(String(snap.data()?.data||''));
+        }
+
+        const rawState=returned.join('');
+        const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(rawState));
+        const sha256=[...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');
+        const expected=String(meta.sha256||state.sha256||'');
+        if(!expected||sha256!==expected)throw new Error('A integridade da cópia na nuvem não confere.');
+
+        let parsed=null;
+        try{parsed=JSON.parse(rawState)}catch{throw new Error('A cópia está íntegra, mas o conteúdo JSON não pôde ser interpretado.');}
+
+        const summary={
+          accounts:Array.isArray(parsed?.accounts)?parsed.accounts.length:0,
+          cards:Array.isArray(parsed?.cards)?parsed.cards.length:0,
+          investments:Array.isArray(parsed?.investments)?parsed.investments.length:0,
+          debts:Array.isArray(parsed?.debts)?parsed.debts.length:0,
+          movements:Array.isArray(parsed?.movements)?parsed.movements.length:0
+        };
+
+        return {
+          ok:true,
+          verified:true,
+          snapshotId,
+          schema:Number(parsed?.schema)||null,
+          localSavedAt:parsed?.savedAt||meta.localSavedAt||null,
+          byteLength:new TextEncoder().encode(rawState).length,
+          chunkCount:count,
+          sha256,
+          summary
+        };
       },
       async createCloudBackup(rawState,meta={}){
         const user=auth.currentUser;
