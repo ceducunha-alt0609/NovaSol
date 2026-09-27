@@ -1,4 +1,4 @@
-/* NovaSol — Firebase bridge Build 520
+/* NovaSol — Firebase bridge Build 521
    Inicializa Firebase somente quando NOVASOL_FIREBASE_CONFIG estiver preenchido.
    Nesta build a restauração controlada entrega a cópia validada à rotina nativa de restauração do NovaSol.
    Não há sincronização automática. A restauração exige prévia e confirmação explícita.
@@ -173,7 +173,7 @@ if(!configured){
         batch.set(backupRef,{
           kind:'novasol-cloud-backup',
           app:'NovaSol',
-          build:520,
+          build:521,
           schema:Number(meta.schema)||null,
           localSavedAt:meta.localSavedAt||null,
           dataRevision:Math.max(1,Number(meta.dataRevision)||1),
@@ -190,7 +190,7 @@ if(!configured){
 
         batch.set(doc(db,'users',user.uid,'cloudState','current'),{
           latestSnapshotId:snapshotId,
-          build:520,
+          build:521,
           schema:Number(meta.schema)||null,
           dataRevision:Math.max(1,Number(meta.dataRevision)||1),
           dataChangedAt:meta.dataChangedAt||null,
@@ -373,7 +373,7 @@ if(!configured){
     const stampBuild=()=>{
       const foot=document.querySelector('.side .foot');if(!foot)return;
       const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;
-      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 520');
+      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 521');
     };
     document.addEventListener('DOMContentLoaded',()=>{setTimeout(installRestoreControl,900);setTimeout(installStateDetector,950);setTimeout(stampBuild,900)},{once:true});
     window.addEventListener('load',()=>{setTimeout(installRestoreControl,500);setTimeout(installStateDetector,550);setTimeout(stampBuild,500)},{once:true});
