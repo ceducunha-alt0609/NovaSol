@@ -25019,4 +25019,62 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 <script id="novasol-v498-version">
 (()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 498')}};f();document.addEventListener('DOMContentLoaded',f,{once:true});window.addEventListener('load',f,{once:true});setTimeout(f,500)})();
 </script>
+
+<style id="novasol-v499-account-statement-layout">
+/* Build 499 — Contas: extrato mais compacto e alinhado */
+#accounts .account-detail .account-statement .statement-head,
+#accounts .account-detail .account-statement .statement-row{
+  grid-template-columns:76px minmax(150px,1.05fr) minmax(220px,1.7fr) 132px 118px!important;
+  column-gap:14px!important;
+}
+#accounts .account-detail .account-statement .statement-head>*:nth-child(4),
+#accounts .account-detail .account-statement .statement-head>*:nth-child(5){
+  text-align:right!important;
+}
+#accounts .account-detail .account-statement .statement-row>*:nth-child(4),
+#accounts .account-detail .account-statement .statement-row>*:nth-child(5){
+  text-align:right!important;
+}
+@media(max-width:760px){
+ #accounts .account-detail .account-statement{overflow-x:auto}
+ #accounts .account-detail .account-statement .statement-head,
+ #accounts .account-detail .account-statement .statement-row{
+   min-width:760px!important;
+   grid-template-columns:68px 150px minmax(210px,1fr) 125px 110px!important;
+ }
+ #accounts .account-detail .account-statement .statement-head>*,
+ #accounts .account-detail .account-statement .statement-row>*{display:block!important}
+}
+</style>
+<script id="novasol-v499-account-statement-order">
+(()=>{
+  if(window.__novaSolAccountStatementOrderV499)return;
+  window.__novaSolAccountStatementOrderV499=true;
+  const reorder=()=>{
+    const box=document.querySelector('#accounts .account-detail .account-statement');
+    if(!box)return;
+    const head=box.querySelector('.statement-head');
+    if(head&&head.children.length===5){
+      head.children[1].textContent='Categoria';
+      head.children[2].textContent='Descrição';
+    }
+    box.querySelectorAll('#accountStatementRows > .statement-row').forEach(r=>{
+      if(r.dataset.v499Order==='1'||r.children.length!==5)return;
+      const desc=r.children[1],cat=r.children[2];
+      r.insertBefore(cat,desc);
+      r.dataset.v499Order='1';
+    });
+  };
+  const run=()=>requestAnimationFrame(reorder);
+  document.addEventListener('novasol:accounts-updated',run);
+  document.addEventListener('novasol:movements-updated',run);
+  document.querySelector('.nav[data-page="accounts"]')?.addEventListener('click',()=>setTimeout(reorder,0));
+  const host=document.getElementById('accountStatementRows');
+  if(host)new MutationObserver(run).observe(host,{childList:true});
+  setTimeout(reorder,150);
+})();
+</script>
+<script id="novasol-v499-version">
+(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 499')}};f();document.addEventListener('DOMContentLoaded',f,{once:true});window.addEventListener('load',f,{once:true});setTimeout(f,500)})();
+</script>
 </body></html>
