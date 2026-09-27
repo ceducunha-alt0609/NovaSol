@@ -1,4 +1,4 @@
-/* NovaSol — Firebase bridge Build 517
+/* NovaSol — Firebase bridge Build 518
    Inicializa Firebase somente quando NOVASOL_FIREBASE_CONFIG estiver preenchido.
    Nesta build a restauração controlada entrega a cópia validada à rotina nativa de restauração do NovaSol.
    Não há sincronização automática. A restauração exige prévia e confirmação explícita.
@@ -252,10 +252,19 @@ if(!configured){
       let p=value;
       if(typeof value==='string'){try{p=JSON.parse(value)}catch{return value||''}}
       if(!p||typeof p!=='object')return JSON.stringify(p??null);
-      const clean=structuredClone(p);
-      // savedAt records persistence activity, not a financial/data change.
-      delete clean.savedAt;
-      return JSON.stringify(clean);
+      // Compare only business state. Backup/sync/persistence metadata must never
+      // turn identical financial bases into a false conflict.
+      const business={
+        debts:Array.isArray(p.debts)?p.debts:[],
+        accounts:Array.isArray(p.accounts)?p.accounts:[],
+        investments:Array.isArray(p.investments)?p.investments:[],
+        previdencias:Array.isArray(p.previdencias)?p.previdencias:[],
+        cards:Array.isArray(p.cards)?p.cards:[],
+        holders:Array.isArray(p.holders)?p.holders:[],
+        subscriptions:Array.isArray(p.subscriptions)?p.subscriptions:[],
+        movements:Array.isArray(p.movements)?p.movements:[]
+      };
+      return JSON.stringify(business);
     };
     const compareCloudState=async()=>{
       const cloud=await api.readLatestCloudBackup();
@@ -355,7 +364,7 @@ if(!configured){
     const stampBuild=()=>{
       const foot=document.querySelector('.side .foot');if(!foot)return;
       const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;
-      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 517');
+      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 518');
     };
     document.addEventListener('DOMContentLoaded',()=>{setTimeout(installRestoreControl,900);setTimeout(installStateDetector,950);setTimeout(stampBuild,900)},{once:true});
     window.addEventListener('load',()=>{setTimeout(installRestoreControl,500);setTimeout(installStateDetector,550);setTimeout(stampBuild,500)},{once:true});
