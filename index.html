@@ -5391,8 +5391,37 @@ function novasolCanUseStorage(){
    return true;
  }catch(e){return false;}
 }
+// Build 500 — base estrutural para sincronização PC ↔ notebook (ainda sem nuvem)
+function novasolSyncUuid(){
+  try{if(globalThis.crypto?.randomUUID)return globalThis.crypto.randomUUID();}catch(e){}
+  return 'ns-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10)+'-'+Math.random().toString(36).slice(2,10);
+}
+function novasolSyncNow(){return new Date().toISOString();}
+function novasolEnsureRecordSyncMeta(record,now){
+  if(!record||typeof record!=='object'||Array.isArray(record))return record;
+  if(!record.syncId)record.syncId=novasolSyncUuid();
+  if(!record.createdAt)record.createdAt=now;
+  if(!record.updatedAt)record.updatedAt=record.createdAt||now;
+  return record;
+}
+function novasolEnsurePayloadSyncMeta(payload){
+  if(!payload||typeof payload!=='object')return payload;
+  const now=novasolSyncNow();
+  ['debts','accounts','investments','previdencias','cards','holders','subscriptions','movements'].forEach(key=>{
+    if(Array.isArray(payload[key]))payload[key].forEach(item=>novasolEnsureRecordSyncMeta(item,now));
+  });
+  payload.schema=Math.max(Number(payload.schema)||0,3);
+  if(!payload.createdAt)payload.createdAt=payload.savedAt||now;
+  payload.updatedAt=payload.savedAt||now;
+  return payload;
+}
 function collectPersistedMovementRows(){
- return [...document.querySelectorAll('#movements .tx-row[data-persisted="1"]')].map(r=>({
+ return [...document.querySelectorAll('#movements .tx-row[data-persisted="1"]')].map(r=>{
+   const now=novasolSyncNow();
+   if(!r.dataset.syncId)r.dataset.syncId=novasolSyncUuid();
+   if(!r.dataset.createdAt)r.dataset.createdAt=now;
+   if(!r.dataset.updatedAt)r.dataset.updatedAt=r.dataset.createdAt;
+   return ({
    title:r.dataset.title||'',
    type:r.dataset.type||'',
    value:r.dataset.value||'',
@@ -5444,8 +5473,12 @@ function collectPersistedMovementRows(){
    expensePrevidenciaId:r.dataset.expensePrevidenciaId||'',
    expensePrevidenciaCompetence:r.dataset.expensePrevidenciaCompetence||'',
    expensePrevidenciaKey:r.dataset.expensePrevidenciaKey||'',
+   syncId:r.dataset.syncId||'',
+   createdAt:r.dataset.createdAt||'',
+   updatedAt:r.dataset.updatedAt||'',
    html:r.innerHTML
- }));
+   });
+ });
 }
 function saveNovaSolState(){
  if(!novasolCanUseStorage())return false;
@@ -5463,6 +5496,7 @@ function saveNovaSolState(){
      subscriptions:(typeof subscriptionSettingsData!=='undefined'?JSON.parse(JSON.stringify(subscriptionSettingsData)):[]),
      movements:collectPersistedMovementRows()
    };
+   novasolEnsurePayloadSyncMeta(payload);
    localStorage.setItem(NOVASOL_STATE_KEY,JSON.stringify(payload));
    try{window.novaSolBackupFeedback?.markAutosave(payload.savedAt)}catch(e){}
    return true;
@@ -5474,7 +5508,7 @@ function restorePersistedMovementRow(data){
  const host=findOrCreateMovementDay(iso);if(!host)return;
  const row=document.createElement('div');
  row.className='tx-row';row.dataset.persisted='1';
- ['title','type','value','date','isoDate','effectiveIsoDate','adjustBusinessDay','account','accountId','investment','category','categoryName','objective','objectiveId','status','debtId','principal','debtImpactApplied','debtHistoryEvent','debtHistorySeq','debtInstallmentEffect','description','payrollGross','payrollInss','payrollOther','payrollContributionSalary','payrollPrevidenciaId','payrollCompetence','payrollPrevidenciaKey','payrollDiscounts','payrollLinks','installmentGroup','installmentIndex','installmentCount','installmentTotal','installmentBaseTitle','cardPurchase','cardId','cardOperation','holder','holderId','purchaseIsoDate','transferOrigin','transferOriginId','transferDestination','transferDestinationId','transferMethod','transferOwn','cashback','cashbackDestination','cashbackSource','cashbackWallet','cashbackOperation','expensePrevidenciaId','expensePrevidenciaCompetence','expensePrevidenciaKey'].forEach(k=>{if(data[k]!==undefined)row.dataset[k]=data[k]});
+ ['title','type','value','date','isoDate','effectiveIsoDate','adjustBusinessDay','account','accountId','investment','category','categoryName','objective','objectiveId','status','debtId','principal','debtImpactApplied','debtHistoryEvent','debtHistorySeq','debtInstallmentEffect','description','payrollGross','payrollInss','payrollOther','payrollContributionSalary','payrollPrevidenciaId','payrollCompetence','payrollPrevidenciaKey','payrollDiscounts','payrollLinks','installmentGroup','installmentIndex','installmentCount','installmentTotal','installmentBaseTitle','cardPurchase','cardId','cardOperation','holder','holderId','purchaseIsoDate','transferOrigin','transferOriginId','transferDestination','transferDestinationId','transferMethod','transferOwn','cashback','cashbackDestination','cashbackSource','cashbackWallet','cashbackOperation','expensePrevidenciaId','expensePrevidenciaCompetence','expensePrevidenciaKey','syncId','createdAt','updatedAt'].forEach(k=>{if(data[k]!==undefined)row.dataset[k]=data[k]});
  row.innerHTML=data.html||'';
  row.onclick=()=>openMovementDetail(row);
  host.appendChild(row);
@@ -5519,6 +5553,9 @@ function loadNovaSolState(){
  try{
    const raw=localStorage.getItem(NOVASOL_STATE_KEY);if(!raw)return false;
    const payload=JSON.parse(raw);
+   const beforeSchema=Number(payload.schema)||0;
+   novasolEnsurePayloadSyncMeta(payload);
+   if(beforeSchema<3)localStorage.setItem(NOVASOL_STATE_KEY,JSON.stringify(payload));
    if(Array.isArray(payload.debts)){
      debtSettingsData.splice(0,debtSettingsData.length,...payload.debts);
    }
@@ -8094,6 +8131,10 @@ document.getElementById('confirmRestoreDemo')?.addEventListener('click',()=>{doc
 
 
 
+
+<script id="novasol-v500-version">
+(()=>{const f=()=>{const foot=document.querySelector('.side .foot');if(!foot)return;const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 500')}};f();document.addEventListener('DOMContentLoaded',f,{once:true});window.addEventListener('load',f,{once:true});setTimeout(f,500)})();
+</script>
 </body></html>`;
    statementModal?.classList.remove('open');
    document.getElementById('novasolPrintFrame')?.remove();
