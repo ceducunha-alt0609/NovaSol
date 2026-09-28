@@ -1,4 +1,4 @@
-/* NovaSol — Firebase bridge Build 523
+/* NovaSol — Firebase bridge Build 524
    Inicializa Firebase somente quando NOVASOL_FIREBASE_CONFIG estiver preenchido.
    Nesta build a restauração controlada entrega a cópia validada à rotina nativa de restauração do NovaSol.
    Não há sincronização automática. A restauração exige prévia e confirmação explícita.
@@ -173,7 +173,7 @@ if(!configured){
         batch.set(backupRef,{
           kind:'novasol-cloud-backup',
           app:'NovaSol',
-          build:523,
+          build:524,
           schema:Number(meta.schema)||null,
           localSavedAt:meta.localSavedAt||null,
           dataRevision:Math.max(1,Number(meta.dataRevision)||1),
@@ -190,7 +190,7 @@ if(!configured){
 
         batch.set(doc(db,'users',user.uid,'cloudState','current'),{
           latestSnapshotId:snapshotId,
-          build:523,
+          build:524,
           schema:Number(meta.schema)||null,
           dataRevision:Math.max(1,Number(meta.dataRevision)||1),
           dataChangedAt:meta.dataChangedAt||null,
@@ -381,52 +381,73 @@ if(!configured){
       const msg=document.querySelector('.novasol-cloud-auth-msg');
       if(!actions||!msg)return;
 
-      // Find the smallest settings block that owns the Google account controls.
       let authPanel=actions;
       for(let i=0;i<6&&authPanel?.parentElement;i++){
         const parent=authPanel.parentElement;
         if(parent.contains(msg)&&/Conta Google/i.test(parent.textContent||'')){authPanel=parent;break;}
         authPanel=parent;
       }
-      if(!authPanel||authPanel.id==='novasol-sync-center-panel')return;
+      if(!authPanel)return;
 
       let overlay=document.getElementById('novasol-sync-center-overlay');
       if(!overlay){
         overlay=document.createElement('div');
         overlay.id='novasol-sync-center-overlay';
-        overlay.style.cssText='position:fixed;inset:0;background:rgba(2,12,22,.80);z-index:99990;display:none;align-items:center;justify-content:center;padding:20px';
-        overlay.innerHTML='<div id="novasol-sync-center-shell" style="width:min(900px,96vw);max-height:88vh;overflow:auto;background:#0b2233;border:1px solid #315b77;border-radius:18px;padding:22px;color:#eaf5ff;box-shadow:0 24px 70px rgba(0,0,0,.48)"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px"><div><h3 style="margin:0 0 5px;font-size:20px">Sincronização entre dispositivos</h3><p style="margin:0;color:#9fbdcf">Central PC ↔ nuvem ↔ notebook. Os controles homologados continuam manuais e protegidos.</p></div><button type="button" class="ns-sync-center-close" aria-label="Fechar" style="border:0;background:transparent;color:#c8dce8;font-size:24px;cursor:pointer">×</button></div><div class="ns-sync-center-host"></div><div style="margin-top:14px;padding:11px 13px;border-radius:10px;background:#102f42;color:#a9c8da;font-size:12px">Nenhuma base é substituída automaticamente. Envio e restauração continuam exigindo ação explícita.</div></div>';
+        overlay.style.cssText='position:fixed;inset:0;background:rgba(2,12,22,.82);z-index:99990;display:none;align-items:center;justify-content:center;padding:20px';
+        overlay.innerHTML='<div style="width:min(900px,96vw);max-height:90vh;overflow:auto;background:#0b2233;border:1px solid #315b77;border-radius:18px;padding:22px;color:#eaf5ff;box-shadow:0 24px 70px rgba(0,0,0,.5)"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px"><div><h3 style="margin:0 0 5px;font-size:20px">Sincronização entre dispositivos</h3><p style="margin:0;color:#9fbdcf">Central segura para manter PC, nuvem e notebook na mesma revisão.</p></div><button type="button" class="ns-sync-center-close" aria-label="Fechar" style="border:0;background:transparent;color:#c8dce8;font-size:25px;cursor:pointer">×</button></div><div class="ns-sync-overview" style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:stretch;margin-bottom:16px"><div class="ns-local-card" style="padding:14px;border:1px solid #284c64;border-radius:12px;background:#0e293b"><b>Este dispositivo</b><div style="margin-top:7px;color:#a9c8da">Aguardando comparação</div></div><div style="display:flex;align-items:center;color:#6f9ab5;font-size:22px">↔</div><div class="ns-cloud-card" style="padding:14px;border:1px solid #284c64;border-radius:12px;background:#0e293b"><b>Nuvem</b><div style="margin-top:7px;color:#a9c8da">Aguardando comparação</div></div></div><div class="ns-sync-center-host"></div><div style="margin-top:14px;padding:11px 13px;border-radius:10px;background:#102f42;color:#a9c8da;font-size:12px">Proteção ativa: nenhuma base é substituída automaticamente. Envio e restauração exigem ação explícita.</div></div>';
         document.body.appendChild(overlay);
         overlay.querySelector('.ns-sync-center-close').addEventListener('click',()=>overlay.style.display='none');
         overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.style.display='none'});
       }
+
       const host=overlay.querySelector('.ns-sync-center-host');
-      if(authPanel.parentElement!==host){
-        authPanel.id='novasol-sync-center-panel';
-        authPanel.style.margin='0';
-        host.appendChild(authPanel);
+      if(authPanel.parentElement!==host)host.appendChild(authPanel);
+      authPanel.id='novasol-sync-center-panel';
+      authPanel.style.cssText='margin:0;padding:16px;border:1px solid #284c64;border-radius:12px;background:#0d283a;color:#eaf5ff';
+
+      // Repair styling after moving the native block outside its original CSS scope.
+      [...authPanel.querySelectorAll('button')].forEach(btn=>{
+        btn.style.cssText='min-height:38px;padding:8px 12px;border:1px solid #365f78;border-radius:9px;background:#16374b;color:#eaf5ff;font-weight:700;cursor:pointer';
+      });
+      const signOutBtn=[...authPanel.querySelectorAll('button')].find(b=>/Sair da conta/i.test(b.textContent||''));
+      if(signOutBtn)signOutBtn.style.background='#2679e8';
+      actions.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-top:12px';
+      msg.style.cssText='display:block;margin-top:12px;padding:10px 12px;border:1px solid #28765d;border-radius:9px;background:#10392f;color:#9fe3c1;font-size:12px';
+      msg.classList.add('show');
+
+      // Remove obsolete copy left from the pre-sync phase and loose icon text.
+      [...authPanel.querySelectorAll('*')].forEach(el=>{
+        const t=(el.textContent||'').trim();
+        if(t==='G' && el.children.length===0)el.style.display='none';
+        if(/Seus dados financeiros ainda permanecem somente neste dispositivo/i.test(t) && el.children.length===0)el.textContent='Conta usada para identificar com segurança suas cópias na nuvem.';
+      });
+
+      const updateOverview=detail=>{
+        if(!detail)return;
+        const local=overlay.querySelector('.ns-local-card'),cloud=overlay.querySelector('.ns-cloud-card');
+        const when=t=>t?new Date(t).toLocaleString('pt-BR'):'não informada';
+        if(local)local.innerHTML='<b>Este dispositivo</b><div style="margin-top:7px;color:#bcd4e3">Revisão '+detail.localRevision+'<br>'+when(detail.localTime)+'</div>';
+        if(cloud)cloud.innerHTML='<b>Nuvem</b><div style="margin-top:7px;color:#bcd4e3">Revisão '+detail.cloudRevision+'<br>'+when(detail.cloudTime)+'</div>';
+      };
+      if(!overlay.dataset.nsCompareListener){
+        overlay.dataset.nsCompareListener='1';
+        window.addEventListener('novasol:cloud-state-compared',e=>updateOverview(e.detail));
       }
 
-      // Turn the existing "Em breve" card into the entry point for this center.
-      const candidates=[...document.querySelectorAll('button,div,a')].filter(el=>/Sincronização entre dispositivos/i.test(el.textContent||''));
+      const candidates=[...document.querySelectorAll('button,div,a')].filter(el=>/Sincronização entre dispositivos/i.test(el.textContent||'')&&!overlay.contains(el));
       candidates.sort((a,b)=>(a.textContent||'').length-(b.textContent||'').length);
       let card=candidates[0];
       if(!card)return;
-      while(card.parentElement && card.parentElement!==document.body && !/Em breve/i.test(card.textContent||'') && /Sincronização entre dispositivos/i.test(card.parentElement.textContent||'')) card=card.parentElement;
-      card.style.cursor='pointer';
-      card.setAttribute('role','button');card.setAttribute('tabindex','0');
-      [...card.querySelectorAll('*')].forEach(el=>{if((el.textContent||'').trim()==='Em breve')el.textContent='Gerenciar PC ↔ notebook'});
-      const open=e=>{e?.preventDefault?.();e?.stopPropagation?.();overlay.style.display='flex'};
-      if(!card.dataset.nsSyncCenter){
-        card.dataset.nsSyncCenter='1';
-        card.addEventListener('click',open,true);
-        card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){open(e)}});
-      }
+      while(card.parentElement&&card.parentElement!==document.body&&!/Em breve|Gerenciar PC/i.test(card.textContent||'')&&/Sincronização entre dispositivos/i.test(card.parentElement.textContent||''))card=card.parentElement;
+      [...card.querySelectorAll('*')].forEach(el=>{if(/^(Em breve|Gerenciar PC ↔ notebook)$/.test((el.textContent||'').trim()))el.textContent='Gerenciar PC ↔ notebook'});
+      card.style.cursor='pointer';card.setAttribute('role','button');card.setAttribute('tabindex','0');
+      const open=e=>{e?.preventDefault?.();e?.stopPropagation?.();overlay.style.display='flex';const compare=authPanel.querySelector('.novasol-cloud-compare');if(compare&&!compare.disabled)compare.click()};
+      if(!card.dataset.nsSyncCenter){card.dataset.nsSyncCenter='1';card.addEventListener('click',open,true);card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')open(e)})}
     };
     const stampBuild=()=>{
       const foot=document.querySelector('.side .foot');if(!foot)return;
       const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;
-      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 523');
+      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 524');
     };
     document.addEventListener('DOMContentLoaded',()=>{setTimeout(installRestoreControl,900);setTimeout(installStateDetector,950);setTimeout(installSyncCenter,1050);setTimeout(stampBuild,900)},{once:true});
     window.addEventListener('load',()=>{setTimeout(installRestoreControl,500);setTimeout(installStateDetector,550);setTimeout(installSyncCenter,650);setTimeout(stampBuild,500)},{once:true});
