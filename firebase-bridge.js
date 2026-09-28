@@ -1,4 +1,4 @@
-/* NovaSol — Firebase bridge Build 524
+/* NovaSol — Firebase bridge Build 525
    Inicializa Firebase somente quando NOVASOL_FIREBASE_CONFIG estiver preenchido.
    Nesta build a restauração controlada entrega a cópia validada à rotina nativa de restauração do NovaSol.
    Não há sincronização automática. A restauração exige prévia e confirmação explícita.
@@ -173,7 +173,7 @@ if(!configured){
         batch.set(backupRef,{
           kind:'novasol-cloud-backup',
           app:'NovaSol',
-          build:524,
+          build:525,
           schema:Number(meta.schema)||null,
           localSavedAt:meta.localSavedAt||null,
           dataRevision:Math.max(1,Number(meta.dataRevision)||1),
@@ -190,7 +190,7 @@ if(!configured){
 
         batch.set(doc(db,'users',user.uid,'cloudState','current'),{
           latestSnapshotId:snapshotId,
-          build:524,
+          build:525,
           schema:Number(meta.schema)||null,
           dataRevision:Math.max(1,Number(meta.dataRevision)||1),
           dataChangedAt:meta.dataChangedAt||null,
@@ -380,74 +380,55 @@ if(!configured){
       const actions=document.querySelector('.novasol-cloud-auth-actions');
       const msg=document.querySelector('.novasol-cloud-auth-msg');
       if(!actions||!msg)return;
-
       let authPanel=actions;
       for(let i=0;i<6&&authPanel?.parentElement;i++){
         const parent=authPanel.parentElement;
-        if(parent.contains(msg)&&/Conta Google/i.test(parent.textContent||'')){authPanel=parent;break;}
+        if(parent.contains(msg)&&/Conta Google/i.test(parent.textContent||'')){authPanel=parent;break}
         authPanel=parent;
       }
       if(!authPanel)return;
-
       let overlay=document.getElementById('novasol-sync-center-overlay');
       if(!overlay){
-        overlay=document.createElement('div');
-        overlay.id='novasol-sync-center-overlay';
+        overlay=document.createElement('div');overlay.id='novasol-sync-center-overlay';
         overlay.style.cssText='position:fixed;inset:0;background:rgba(2,12,22,.82);z-index:99990;display:none;align-items:center;justify-content:center;padding:20px';
-        overlay.innerHTML='<div style="width:min(900px,96vw);max-height:90vh;overflow:auto;background:#0b2233;border:1px solid #315b77;border-radius:18px;padding:22px;color:#eaf5ff;box-shadow:0 24px 70px rgba(0,0,0,.5)"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px"><div><h3 style="margin:0 0 5px;font-size:20px">Sincronização entre dispositivos</h3><p style="margin:0;color:#9fbdcf">Central segura para manter PC, nuvem e notebook na mesma revisão.</p></div><button type="button" class="ns-sync-center-close" aria-label="Fechar" style="border:0;background:transparent;color:#c8dce8;font-size:25px;cursor:pointer">×</button></div><div class="ns-sync-overview" style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:stretch;margin-bottom:16px"><div class="ns-local-card" style="padding:14px;border:1px solid #284c64;border-radius:12px;background:#0e293b"><b>Este dispositivo</b><div style="margin-top:7px;color:#a9c8da">Aguardando comparação</div></div><div style="display:flex;align-items:center;color:#6f9ab5;font-size:22px">↔</div><div class="ns-cloud-card" style="padding:14px;border:1px solid #284c64;border-radius:12px;background:#0e293b"><b>Nuvem</b><div style="margin-top:7px;color:#a9c8da">Aguardando comparação</div></div></div><div class="ns-sync-center-host"></div><div style="margin-top:14px;padding:11px 13px;border-radius:10px;background:#102f42;color:#a9c8da;font-size:12px">Proteção ativa: nenhuma base é substituída automaticamente. Envio e restauração exigem ação explícita.</div></div>';
+        overlay.innerHTML='<div style="width:min(900px,96vw);max-height:90vh;overflow:auto;background:#0b2233;border:1px solid #315b77;border-radius:18px;padding:22px;color:#eaf5ff;box-shadow:0 24px 70px rgba(0,0,0,.5)"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px"><div><h3 style="margin:0 0 5px;font-size:20px">Sincronização entre dispositivos</h3><p style="margin:0;color:#9fbdcf">Mantenha PC, nuvem e notebook na mesma revisão com segurança.</p></div><button type="button" class="ns-sync-center-close" style="border:0;background:transparent;color:#c8dce8;font-size:25px;cursor:pointer">×</button></div><div class="ns-sync-state" style="margin:16px 0 12px;text-align:center"><span style="display:inline-block;padding:7px 14px;border-radius:999px;background:#123246;border:1px solid #315b77;color:#bcd4e3;font-weight:700">Verificando situação…</span></div><div style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:stretch"><div class="ns-local-card" style="padding:14px;border:1px solid #284c64;border-radius:12px;background:#0e293b"><b>Este dispositivo</b><div style="margin-top:7px;color:#a9c8da">Aguardando comparação</div></div><div style="display:flex;align-items:center;color:#6f9ab5;font-size:22px">↔</div><div class="ns-cloud-card" style="padding:14px;border:1px solid #284c64;border-radius:12px;background:#0e293b"><b>Nuvem</b><div style="margin-top:7px;color:#a9c8da">Aguardando comparação</div></div></div><div class="ns-account-strip" style="margin-top:14px;padding:11px 13px;border:1px solid #284c64;border-radius:10px;background:#0d283a"></div><div style="display:flex;justify-content:center;margin-top:14px"><button type="button" class="ns-check-now" style="min-height:40px;padding:9px 18px;border:1px solid #39749a;border-radius:10px;background:#1d6fd8;color:white;font-weight:800;cursor:pointer">Verificar agora</button></div><details class="ns-manual" style="margin-top:14px;border:1px solid #284c64;border-radius:11px;background:#0d283a"><summary style="padding:12px 14px;cursor:pointer;font-weight:700;color:#c9dce8">Controles manuais</summary><div class="ns-sync-center-host" style="padding:0 14px 14px"></div></details><div style="margin-top:14px;text-align:center;color:#8fb0c4;font-size:12px">🔒 Sincronização protegida · nenhuma substituição automática</div></div>';
         document.body.appendChild(overlay);
         overlay.querySelector('.ns-sync-center-close').addEventListener('click',()=>overlay.style.display='none');
         overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.style.display='none'});
       }
-
       const host=overlay.querySelector('.ns-sync-center-host');
       if(authPanel.parentElement!==host)host.appendChild(authPanel);
-      authPanel.id='novasol-sync-center-panel';
-      authPanel.style.cssText='margin:0;padding:16px;border:1px solid #284c64;border-radius:12px;background:#0d283a;color:#eaf5ff';
-
-      // Repair styling after moving the native block outside its original CSS scope.
-      [...authPanel.querySelectorAll('button')].forEach(btn=>{
-        btn.style.cssText='min-height:38px;padding:8px 12px;border:1px solid #365f78;border-radius:9px;background:#16374b;color:#eaf5ff;font-weight:700;cursor:pointer';
-      });
-      const signOutBtn=[...authPanel.querySelectorAll('button')].find(b=>/Sair da conta/i.test(b.textContent||''));
-      if(signOutBtn)signOutBtn.style.background='#2679e8';
-      actions.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-top:12px';
-      msg.style.cssText='display:block;margin-top:12px;padding:10px 12px;border:1px solid #28765d;border-radius:9px;background:#10392f;color:#9fe3c1;font-size:12px';
-      msg.classList.add('show');
-
-      // Remove obsolete copy left from the pre-sync phase and loose icon text.
-      [...authPanel.querySelectorAll('*')].forEach(el=>{
-        const t=(el.textContent||'').trim();
-        if(t==='G' && el.children.length===0)el.style.display='none';
-        if(/Seus dados financeiros ainda permanecem somente neste dispositivo/i.test(t) && el.children.length===0)el.textContent='Conta usada para identificar com segurança suas cópias na nuvem.';
-      });
-
-      const updateOverview=detail=>{
-        if(!detail)return;
-        const local=overlay.querySelector('.ns-local-card'),cloud=overlay.querySelector('.ns-cloud-card');
+      authPanel.style.cssText='margin:0;padding:0;border:0;background:transparent;color:#eaf5ff';
+      actions.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-top:8px';
+      [...authPanel.querySelectorAll('button')].forEach(btn=>btn.style.cssText='min-height:36px;padding:7px 11px;border:1px solid #365f78;border-radius:9px;background:#16374b;color:#eaf5ff;font-weight:700;cursor:pointer');
+      const compare=authPanel.querySelector('.novasol-cloud-compare');if(compare)compare.style.display='none';
+      msg.style.cssText='display:none';
+      const text=(authPanel.textContent||'');
+      const connected=/Conectado/i.test(text);
+      const email=(text.match(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/)||[])[0]||'';
+      const account=overlay.querySelector('.ns-account-strip');
+      if(account)account.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><b>Conta Google</b><span style="margin-left:10px;color:'+(connected?'#78ddb1':'#f2c46d')+'">'+(connected?'Conectado ✓':'Não conectado')+'</span></div><div style="color:#a9c8da">'+(email||'Identidade da nuvem')+'</div></div>';
+      [...authPanel.querySelectorAll('*')].forEach(el=>{const t=(el.textContent||'').trim();if(el.children.length===0&&(t==='G'||/Conta usada para identificar|Identidade usada para/i.test(t)||t==='Conta Google'||t==='Conectado ✓'||t===email))el.style.display='none'});
+      const check=overlay.querySelector('.ns-check-now');if(check&&!check.dataset.bound){check.dataset.bound='1';check.addEventListener('click',()=>{if(compare&&!compare.disabled)compare.click()})}
+      const update=d=>{
+        if(!d)return;const local=overlay.querySelector('.ns-local-card'),cloud=overlay.querySelector('.ns-cloud-card'),state=overlay.querySelector('.ns-sync-state');
         const when=t=>t?new Date(t).toLocaleString('pt-BR'):'não informada';
-        if(local)local.innerHTML='<b>Este dispositivo</b><div style="margin-top:7px;color:#bcd4e3">Revisão '+detail.localRevision+'<br>'+when(detail.localTime)+'</div>';
-        if(cloud)cloud.innerHTML='<b>Nuvem</b><div style="margin-top:7px;color:#bcd4e3">Revisão '+detail.cloudRevision+'<br>'+when(detail.cloudTime)+'</div>';
+        const ls=summarizeLocal().summary.movements,cs=d.state==='equal'?ls:(d.cloudMovements??'—');
+        if(local)local.innerHTML='<b>Este dispositivo</b><div style="margin-top:7px;color:#d5e6f0;font-weight:700">'+ls+' lançamentos · Revisão '+d.localRevision+'</div><div style="margin-top:4px;color:#86a8bc;font-size:12px">'+when(d.localTime)+'</div>';
+        if(cloud)cloud.innerHTML='<b>Nuvem</b><div style="margin-top:7px;color:#d5e6f0;font-weight:700">'+cs+' lançamentos · Revisão '+d.cloudRevision+'</div><div style="margin-top:4px;color:#86a8bc;font-size:12px">'+when(d.cloudTime)+'</div>';
+        if(state){const equal=d.state==='equal';state.innerHTML='<span style="display:inline-block;padding:7px 14px;border-radius:999px;border:1px solid '+(equal?'#28765d':'#806a31')+';background:'+(equal?'#10392f':'#3a3115')+';color:'+(equal?'#9fe3c1':'#f1d37a')+';font-weight:800">'+(equal?'✓ Tudo sincronizado':d.label)+'</span>'}
       };
-      if(!overlay.dataset.nsCompareListener){
-        overlay.dataset.nsCompareListener='1';
-        window.addEventListener('novasol:cloud-state-compared',e=>updateOverview(e.detail));
-      }
-
-      const candidates=[...document.querySelectorAll('button,div,a')].filter(el=>/Sincronização entre dispositivos/i.test(el.textContent||'')&&!overlay.contains(el));
-      candidates.sort((a,b)=>(a.textContent||'').length-(b.textContent||'').length);
-      let card=candidates[0];
-      if(!card)return;
-      while(card.parentElement&&card.parentElement!==document.body&&!/Em breve|Gerenciar PC/i.test(card.textContent||'')&&/Sincronização entre dispositivos/i.test(card.parentElement.textContent||''))card=card.parentElement;
+      if(!overlay.dataset.listener){overlay.dataset.listener='1';window.addEventListener('novasol:cloud-state-compared',e=>update(e.detail))}
+      const candidates=[...document.querySelectorAll('button,div,a')].filter(el=>/Sincronização entre dispositivos/i.test(el.textContent||'')&&!overlay.contains(el));candidates.sort((a,b)=>(a.textContent||'').length-(b.textContent||'').length);let card=candidates[0];if(!card)return;
       [...card.querySelectorAll('*')].forEach(el=>{if(/^(Em breve|Gerenciar PC ↔ notebook)$/.test((el.textContent||'').trim()))el.textContent='Gerenciar PC ↔ notebook'});
       card.style.cursor='pointer';card.setAttribute('role','button');card.setAttribute('tabindex','0');
-      const open=e=>{e?.preventDefault?.();e?.stopPropagation?.();overlay.style.display='flex';const compare=authPanel.querySelector('.novasol-cloud-compare');if(compare&&!compare.disabled)compare.click()};
+      const open=e=>{e?.preventDefault?.();e?.stopPropagation?.();overlay.style.display='flex';if(compare&&!compare.disabled)compare.click()};
       if(!card.dataset.nsSyncCenter){card.dataset.nsSyncCenter='1';card.addEventListener('click',open,true);card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')open(e)})}
     };
     const stampBuild=()=>{
       const foot=document.querySelector('.side .foot');if(!foot)return;
       const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;
-      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 524');
+      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 525');
     };
     document.addEventListener('DOMContentLoaded',()=>{setTimeout(installRestoreControl,900);setTimeout(installStateDetector,950);setTimeout(installSyncCenter,1050);setTimeout(stampBuild,900)},{once:true});
     window.addEventListener('load',()=>{setTimeout(installRestoreControl,500);setTimeout(installStateDetector,550);setTimeout(installSyncCenter,650);setTimeout(stampBuild,500)},{once:true});
