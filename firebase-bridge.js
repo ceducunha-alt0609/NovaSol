@@ -1,4 +1,4 @@
-/* NovaSol — Firebase bridge Build 527
+/* NovaSol — Firebase bridge Build 528
    Inicializa Firebase somente quando NOVASOL_FIREBASE_CONFIG estiver preenchido.
    Nesta build a restauração controlada entrega a cópia validada à rotina nativa de restauração do NovaSol.
    Não há sincronização automática. A restauração exige prévia e confirmação explícita.
@@ -399,8 +399,8 @@ if(!configured){
       const host=overlay.querySelector('.ns-sync-center-host');
       if(authPanel.parentElement!==host)host.appendChild(authPanel);
       authPanel.style.cssText='margin:0;padding:0;border:0;background:transparent;color:#eaf5ff';
-      actions.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-top:8px';
-      [...authPanel.querySelectorAll('button')].forEach(btn=>btn.style.cssText='min-height:32px;padding:6px 10px;border:1px solid #365f78;border-radius:9px;background:#16374b;color:#eaf5ff;font-weight:700;cursor:pointer');
+      actions.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:12px';
+      [...authPanel.querySelectorAll('button')].forEach(btn=>btn.style.cssText='min-height:32px;padding:6px 10px;border:1px solid #365f78;border-radius:9px;background:#16374b;color:#eaf5ff;font-weight:700;font-size:12px;cursor:pointer');
       const compare=authPanel.querySelector('.novasol-cloud-compare');if(compare)compare.style.display='none';
       msg.style.cssText='display:none';
       const text=(authPanel.textContent||'');
@@ -408,7 +408,7 @@ if(!configured){
       const email=(text.match(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/)||[])[0]||'';
       const account=overlay.querySelector('.ns-account-strip');
       if(account)account.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><b>Conta Google</b><span style="margin-left:10px;color:'+(connected?'#78ddb1':'#f2c46d')+'">'+(connected?'Conectado ✓':'Não conectado')+'</span></div><div style="color:#a9c8da">'+(email||'Identidade da nuvem')+'</div></div>';
-      [...authPanel.querySelectorAll('*')].forEach(el=>{const t=(el.textContent||'').trim();if(el.children.length===0&&el.tagName!=='BUTTON'&&(t==='G'||/Conta usada para identificar|Identidade usada para/i.test(t)||t==='Conta Google'||t==='Conectado ✓'||(email&&t.includes(email))))el.style.display='none'});
+      [...authPanel.querySelectorAll('*')].forEach(el=>{const t=(el.textContent||'').trim();if(el.tagName!=='BUTTON'&&el.children.length===0&&(t==='G'||/Conta usada para identificar|Identidade usada para/i.test(t)||t==='Conta Google'||t==='Conectado ✓'||(email&&t.includes(email))))el.style.display='none'});
       // Keep account identity only in the compact strip; hide loose identity text and prevent the sign-out label leaking into it.
       [...authPanel.querySelectorAll('button')].forEach(btn=>{if(/Sair da conta/i.test(btn.textContent||''))btn.style.display='inline-flex'});
       if(account)account.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><b>Conta Google</b><span style="margin-left:10px;color:'+(connected?'#78ddb1':'#f2c46d')+'">'+(connected?'Conectado ✓':'Não conectado')+'</span></div><div style="color:#a9c8da">'+(email||'Identidade da nuvem')+'</div></div>';
@@ -431,7 +431,7 @@ if(!configured){
     const stampBuild=()=>{
       const foot=document.querySelector('.side .foot');if(!foot)return;
       const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;
-      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 527');
+      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 528');
     };
     document.addEventListener('DOMContentLoaded',()=>{setTimeout(installRestoreControl,900);setTimeout(installStateDetector,950);setTimeout(installSyncCenter,1050);setTimeout(stampBuild,900)},{once:true});
     window.addEventListener('load',()=>{setTimeout(installRestoreControl,500);setTimeout(installStateDetector,550);setTimeout(installSyncCenter,650);setTimeout(stampBuild,500)},{once:true});
