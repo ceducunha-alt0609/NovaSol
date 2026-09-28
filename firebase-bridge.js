@@ -1,4 +1,4 @@
-/* NovaSol — Firebase bridge Build 525
+/* NovaSol — Firebase bridge Build 526
    Inicializa Firebase somente quando NOVASOL_FIREBASE_CONFIG estiver preenchido.
    Nesta build a restauração controlada entrega a cópia validada à rotina nativa de restauração do NovaSol.
    Não há sincronização automática. A restauração exige prévia e confirmação explícita.
@@ -173,7 +173,7 @@ if(!configured){
         batch.set(backupRef,{
           kind:'novasol-cloud-backup',
           app:'NovaSol',
-          build:525,
+          build:526,
           schema:Number(meta.schema)||null,
           localSavedAt:meta.localSavedAt||null,
           dataRevision:Math.max(1,Number(meta.dataRevision)||1),
@@ -190,7 +190,7 @@ if(!configured){
 
         batch.set(doc(db,'users',user.uid,'cloudState','current'),{
           latestSnapshotId:snapshotId,
-          build:525,
+          build:526,
           schema:Number(meta.schema)||null,
           dataRevision:Math.max(1,Number(meta.dataRevision)||1),
           dataChangedAt:meta.dataChangedAt||null,
@@ -408,7 +408,10 @@ if(!configured){
       const email=(text.match(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/)||[])[0]||'';
       const account=overlay.querySelector('.ns-account-strip');
       if(account)account.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><b>Conta Google</b><span style="margin-left:10px;color:'+(connected?'#78ddb1':'#f2c46d')+'">'+(connected?'Conectado ✓':'Não conectado')+'</span></div><div style="color:#a9c8da">'+(email||'Identidade da nuvem')+'</div></div>';
-      [...authPanel.querySelectorAll('*')].forEach(el=>{const t=(el.textContent||'').trim();if(el.children.length===0&&(t==='G'||/Conta usada para identificar|Identidade usada para/i.test(t)||t==='Conta Google'||t==='Conectado ✓'||t===email))el.style.display='none'});
+      [...authPanel.querySelectorAll('*')].forEach(el=>{const t=(el.textContent||'').trim();if(el.children.length===0&&(t==='G'||/Conta usada para identificar|Identidade usada para/i.test(t)||t==='Conta Google'||t==='Conectado ✓'||t===email||t==='Carlos Cunha • '+email||t==='Carlos Cunha · '+email||t==='Carlos Cunha - '+email))el.style.display='none'});
+      // Keep account identity only in the compact strip; hide loose identity text and prevent the sign-out label leaking into it.
+      [...authPanel.querySelectorAll('button')].forEach(btn=>{if(/Sair da conta/i.test(btn.textContent||''))btn.style.display='inline-flex'});
+      if(account)account.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><b>Conta Google</b><span style="margin-left:10px;color:'+(connected?'#78ddb1':'#f2c46d')+'">'+(connected?'Conectado ✓':'Não conectado')+'</span></div><div style="color:#a9c8da">'+(email||'Identidade da nuvem')+'</div></div>';
       const check=overlay.querySelector('.ns-check-now');if(check&&!check.dataset.bound){check.dataset.bound='1';check.addEventListener('click',()=>{if(compare&&!compare.disabled)compare.click()})}
       const update=d=>{
         if(!d)return;const local=overlay.querySelector('.ns-local-card'),cloud=overlay.querySelector('.ns-cloud-card'),state=overlay.querySelector('.ns-sync-state');
@@ -428,7 +431,7 @@ if(!configured){
     const stampBuild=()=>{
       const foot=document.querySelector('.side .foot');if(!foot)return;
       const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;
-      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 525');
+      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 526');
     };
     document.addEventListener('DOMContentLoaded',()=>{setTimeout(installRestoreControl,900);setTimeout(installStateDetector,950);setTimeout(installSyncCenter,1050);setTimeout(stampBuild,900)},{once:true});
     window.addEventListener('load',()=>{setTimeout(installRestoreControl,500);setTimeout(installStateDetector,550);setTimeout(installSyncCenter,650);setTimeout(stampBuild,500)},{once:true});
