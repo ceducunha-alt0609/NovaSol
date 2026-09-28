@@ -1,4 +1,4 @@
-/* NovaSol — Firebase bridge Build 522
+/* NovaSol — Firebase bridge Build 523
    Inicializa Firebase somente quando NOVASOL_FIREBASE_CONFIG estiver preenchido.
    Nesta build a restauração controlada entrega a cópia validada à rotina nativa de restauração do NovaSol.
    Não há sincronização automática. A restauração exige prévia e confirmação explícita.
@@ -173,7 +173,7 @@ if(!configured){
         batch.set(backupRef,{
           kind:'novasol-cloud-backup',
           app:'NovaSol',
-          build:522,
+          build:523,
           schema:Number(meta.schema)||null,
           localSavedAt:meta.localSavedAt||null,
           dataRevision:Math.max(1,Number(meta.dataRevision)||1),
@@ -190,7 +190,7 @@ if(!configured){
 
         batch.set(doc(db,'users',user.uid,'cloudState','current'),{
           latestSnapshotId:snapshotId,
-          build:522,
+          build:523,
           schema:Number(meta.schema)||null,
           dataRevision:Math.max(1,Number(meta.dataRevision)||1),
           dataChangedAt:meta.dataChangedAt||null,
@@ -376,15 +376,62 @@ if(!configured){
         }finally{btn.disabled=false;btn.textContent='Preparar restauração'}
       });
     };
+    const installSyncCenter=()=>{
+      const actions=document.querySelector('.novasol-cloud-auth-actions');
+      const msg=document.querySelector('.novasol-cloud-auth-msg');
+      if(!actions||!msg)return;
+
+      // Find the smallest settings block that owns the Google account controls.
+      let authPanel=actions;
+      for(let i=0;i<6&&authPanel?.parentElement;i++){
+        const parent=authPanel.parentElement;
+        if(parent.contains(msg)&&/Conta Google/i.test(parent.textContent||'')){authPanel=parent;break;}
+        authPanel=parent;
+      }
+      if(!authPanel||authPanel.id==='novasol-sync-center-panel')return;
+
+      let overlay=document.getElementById('novasol-sync-center-overlay');
+      if(!overlay){
+        overlay=document.createElement('div');
+        overlay.id='novasol-sync-center-overlay';
+        overlay.style.cssText='position:fixed;inset:0;background:rgba(2,12,22,.80);z-index:99990;display:none;align-items:center;justify-content:center;padding:20px';
+        overlay.innerHTML='<div id="novasol-sync-center-shell" style="width:min(900px,96vw);max-height:88vh;overflow:auto;background:#0b2233;border:1px solid #315b77;border-radius:18px;padding:22px;color:#eaf5ff;box-shadow:0 24px 70px rgba(0,0,0,.48)"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px"><div><h3 style="margin:0 0 5px;font-size:20px">Sincronização entre dispositivos</h3><p style="margin:0;color:#9fbdcf">Central PC ↔ nuvem ↔ notebook. Os controles homologados continuam manuais e protegidos.</p></div><button type="button" class="ns-sync-center-close" aria-label="Fechar" style="border:0;background:transparent;color:#c8dce8;font-size:24px;cursor:pointer">×</button></div><div class="ns-sync-center-host"></div><div style="margin-top:14px;padding:11px 13px;border-radius:10px;background:#102f42;color:#a9c8da;font-size:12px">Nenhuma base é substituída automaticamente. Envio e restauração continuam exigindo ação explícita.</div></div>';
+        document.body.appendChild(overlay);
+        overlay.querySelector('.ns-sync-center-close').addEventListener('click',()=>overlay.style.display='none');
+        overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.style.display='none'});
+      }
+      const host=overlay.querySelector('.ns-sync-center-host');
+      if(authPanel.parentElement!==host){
+        authPanel.id='novasol-sync-center-panel';
+        authPanel.style.margin='0';
+        host.appendChild(authPanel);
+      }
+
+      // Turn the existing "Em breve" card into the entry point for this center.
+      const candidates=[...document.querySelectorAll('button,div,a')].filter(el=>/Sincronização entre dispositivos/i.test(el.textContent||''));
+      candidates.sort((a,b)=>(a.textContent||'').length-(b.textContent||'').length);
+      let card=candidates[0];
+      if(!card)return;
+      while(card.parentElement && card.parentElement!==document.body && !/Em breve/i.test(card.textContent||'') && /Sincronização entre dispositivos/i.test(card.parentElement.textContent||'')) card=card.parentElement;
+      card.style.cursor='pointer';
+      card.setAttribute('role','button');card.setAttribute('tabindex','0');
+      [...card.querySelectorAll('*')].forEach(el=>{if((el.textContent||'').trim()==='Em breve')el.textContent='Gerenciar PC ↔ notebook'});
+      const open=e=>{e?.preventDefault?.();e?.stopPropagation?.();overlay.style.display='flex'};
+      if(!card.dataset.nsSyncCenter){
+        card.dataset.nsSyncCenter='1';
+        card.addEventListener('click',open,true);
+        card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){open(e)}});
+      }
+    };
     const stampBuild=()=>{
       const foot=document.querySelector('.side .foot');if(!foot)return;
       const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;
-      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 522');
+      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 523');
     };
-    document.addEventListener('DOMContentLoaded',()=>{setTimeout(installRestoreControl,900);setTimeout(installStateDetector,950);setTimeout(stampBuild,900)},{once:true});
-    window.addEventListener('load',()=>{setTimeout(installRestoreControl,500);setTimeout(installStateDetector,550);setTimeout(stampBuild,500)},{once:true});
-    window.addEventListener('novasol:auth-changed',()=>{setTimeout(installRestoreControl,200);setTimeout(installStateDetector,250)});
-    setTimeout(()=>{installRestoreControl();installStateDetector();stampBuild()},1300);
+    document.addEventListener('DOMContentLoaded',()=>{setTimeout(installRestoreControl,900);setTimeout(installStateDetector,950);setTimeout(installSyncCenter,1050);setTimeout(stampBuild,900)},{once:true});
+    window.addEventListener('load',()=>{setTimeout(installRestoreControl,500);setTimeout(installStateDetector,550);setTimeout(installSyncCenter,650);setTimeout(stampBuild,500)},{once:true});
+    window.addEventListener('novasol:auth-changed',()=>{setTimeout(installRestoreControl,200);setTimeout(installStateDetector,250);setTimeout(installSyncCenter,350)});
+    setTimeout(()=>{installRestoreControl();installStateDetector();installSyncCenter();stampBuild()},1300);
     emit('ready',{projectId:cfg.projectId});
 
     onAuthStateChanged(auth,user=>{
