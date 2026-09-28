@@ -1,4 +1,4 @@
-/* NovaSol — Firebase bridge Build 528
+/* NovaSol — Firebase bridge Build 529
    Inicializa Firebase somente quando NOVASOL_FIREBASE_CONFIG estiver preenchido.
    Nesta build a restauração controlada entrega a cópia validada à rotina nativa de restauração do NovaSol.
    Não há sincronização automática. A restauração exige prévia e confirmação explícita.
@@ -397,22 +397,24 @@ if(!configured){
         overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.style.display='none'});
       }
       const host=overlay.querySelector('.ns-sync-center-host');
-      if(authPanel.parentElement!==host)host.appendChild(authPanel);
+      [...host.children].forEach(el=>{if(el!==authPanel)el.remove()});
+      if(authPanel.parentElement!==host){host.replaceChildren(authPanel)}
       authPanel.style.cssText='margin:0;padding:0;border:0;background:transparent;color:#eaf5ff';
       actions.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:12px';
       [...authPanel.querySelectorAll('button')].forEach(btn=>btn.style.cssText='min-height:32px;padding:6px 10px;border:1px solid #365f78;border-radius:9px;background:#16374b;color:#eaf5ff;font-weight:700;font-size:12px;cursor:pointer');
       const compare=authPanel.querySelector('.novasol-cloud-compare');if(compare)compare.style.display='none';
       msg.style.cssText='display:none';
+      const user=window.NovaSolCloud?.currentUser?.()||null;
       const text=(authPanel.textContent||'');
-      const connected=/Conectado/i.test(text);
-      const email=(text.match(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/)||[])[0]||'';
+      const connected=!!user;
+      const email=user?.email||((text.match(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/)||[])[0]||'');
       const account=overlay.querySelector('.ns-account-strip');
       if(account)account.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><b>Conta Google</b><span style="margin-left:10px;color:'+(connected?'#78ddb1':'#f2c46d')+'">'+(connected?'Conectado ✓':'Não conectado')+'</span></div><div style="color:#a9c8da">'+(email||'Identidade da nuvem')+'</div></div>';
       [...authPanel.querySelectorAll('*')].forEach(el=>{const t=(el.textContent||'').trim();if(el.tagName!=='BUTTON'&&el.children.length===0&&(t==='G'||/Conta usada para identificar|Identidade usada para/i.test(t)||t==='Conta Google'||t==='Conectado ✓'||(email&&t.includes(email))))el.style.display='none'});
       // Keep account identity only in the compact strip; hide loose identity text and prevent the sign-out label leaking into it.
       [...authPanel.querySelectorAll('button')].forEach(btn=>{if(/Sair da conta/i.test(btn.textContent||''))btn.style.display='inline-flex'});
       if(account)account.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><b>Conta Google</b><span style="margin-left:10px;color:'+(connected?'#78ddb1':'#f2c46d')+'">'+(connected?'Conectado ✓':'Não conectado')+'</span></div><div style="color:#a9c8da">'+(email||'Identidade da nuvem')+'</div></div>';
-      const check=overlay.querySelector('.ns-check-now');if(check&&!check.dataset.bound){check.dataset.bound='1';check.addEventListener('click',()=>{if(compare&&!compare.disabled)compare.click()})}
+      const check=overlay.querySelector('.ns-check-now');if(check&&!check.dataset.bound){check.dataset.bound='1';check.addEventListener('click',()=>{if(!compare||compare.disabled)return;check.disabled=true;check.textContent='Verificando…';compare.click();setTimeout(()=>{if(check){check.disabled=false;if(check.textContent==='Verificando…')check.textContent='Verificar agora'}},5000)})}
       const update=d=>{
         if(!d)return;const local=overlay.querySelector('.ns-local-card'),cloud=overlay.querySelector('.ns-cloud-card'),state=overlay.querySelector('.ns-sync-state');
         const when=t=>t?new Date(t).toLocaleString('pt-BR'):'não informada';
@@ -421,7 +423,7 @@ if(!configured){
         if(cloud)cloud.innerHTML='<b>Nuvem</b><div style="margin-top:7px;color:#d5e6f0;font-weight:700">'+cs+' lançamentos · Revisão '+d.cloudRevision+'</div><div style="margin-top:4px;color:#86a8bc;font-size:12px">'+when(d.cloudTime)+'</div>';
         if(state){const equal=d.state==='equal';state.innerHTML='<span style="display:inline-block;padding:7px 14px;border-radius:999px;border:1px solid '+(equal?'#28765d':'#806a31')+';background:'+(equal?'#10392f':'#3a3115')+';color:'+(equal?'#9fe3c1':'#f1d37a')+';font-weight:800">'+(equal?'✓ Tudo sincronizado':d.label)+'</span>'}
       };
-      if(!overlay.dataset.listener){overlay.dataset.listener='1';window.addEventListener('novasol:cloud-state-compared',e=>update(e.detail))}
+      if(!overlay.dataset.listener){overlay.dataset.listener='1';window.addEventListener('novasol:cloud-state-compared',e=>{update(e.detail);const b=overlay.querySelector('.ns-check-now');if(b){b.disabled=false;b.textContent='✓ Verificado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});setTimeout(()=>{if(b.textContent.startsWith('✓ Verificado'))b.textContent='Verificar agora'},3500)}})}
       const candidates=[...document.querySelectorAll('button,div,a')].filter(el=>/Sincronização entre dispositivos/i.test(el.textContent||'')&&!overlay.contains(el));candidates.sort((a,b)=>(a.textContent||'').length-(b.textContent||'').length);let card=candidates[0];if(!card)return;
       [...card.querySelectorAll('*')].forEach(el=>{if(/^(Em breve|Gerenciar PC ↔ notebook)$/.test((el.textContent||'').trim()))el.textContent='Gerenciar PC ↔ notebook'});
       card.style.cursor='pointer';card.setAttribute('role','button');card.setAttribute('tabindex','0');
@@ -431,7 +433,7 @@ if(!configured){
     const stampBuild=()=>{
       const foot=document.querySelector('.side .foot');if(!foot)return;
       const w=document.createTreeWalker(foot,NodeFilter.SHOW_TEXT);let n;
-      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 528');
+      while((n=w.nextNode()))if(/NovaSol v1\.0 · Build \d+/.test(n.nodeValue||''))n.nodeValue=(n.nodeValue||'').replace(/NovaSol v1\.0 · Build \d+/,'NovaSol v1.0 · Build 529');
     };
     document.addEventListener('DOMContentLoaded',()=>{setTimeout(installRestoreControl,900);setTimeout(installStateDetector,950);setTimeout(installSyncCenter,1050);setTimeout(stampBuild,900)},{once:true});
     window.addEventListener('load',()=>{setTimeout(installRestoreControl,500);setTimeout(installStateDetector,550);setTimeout(installSyncCenter,650);setTimeout(stampBuild,500)},{once:true});
