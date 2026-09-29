@@ -2373,6 +2373,31 @@ document.addEventListener('DOMContentLoaded',()=>{
  window.addEventListener('resize',()=>active?show(active):hide());
 });
 </script>
+
+<style id="novasol-v539-card-popover-page-scope">
+/* Build 539 — o popover do cartão só pode existir visualmente dentro da tela Cartões. */
+body:not(.cards-popover-page-v539) #ccFuturePortalV255{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+</style>
+<script id="novasol-v539-card-popover-page-scope-script">
+document.addEventListener('DOMContentLoaded',()=>{
+ const cards=document.getElementById('cards');
+ const portal=()=>document.getElementById('ccFuturePortalV255');
+ const close=()=>{const p=portal();if(p)p.classList.remove('open')};
+ const sync=()=>{
+   const visible=!!cards && getComputedStyle(cards).display!=='none';
+   document.body.classList.toggle('cards-popover-page-v539',visible);
+   if(!visible)close();
+ };
+ sync();
+ if(cards)new MutationObserver(sync).observe(cards,{attributes:true,attributeFilter:['style','class']});
+ document.addEventListener('click',e=>{
+   const nav=e.target.closest?.('[data-page]');
+   if(nav && nav.dataset.page!=='cards'){close();document.body.classList.remove('cards-popover-page-v539')}
+ },true);
+ document.addEventListener('novasol:page-changed',sync);
+ window.addEventListener('hashchange',sync);
+});
+</script>
 </head>
 <body>
 <span id="novasolMerriweatherWarmupV305" aria-hidden="true">NovaSol</span><div class="app">
