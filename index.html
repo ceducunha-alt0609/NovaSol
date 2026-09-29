@@ -2331,48 +2331,6 @@ input.search, .search::placeholder, input::placeholder, textarea::placeholder{fo
 }
 </style>
 
-<style id="novasol-v533-cards-popover-stability">
-/* Build 533 — estabiliza os popovers de Cartões sem alterar dados/layout. */
-#cards .cards-kpi{transform:none!important}
-#cards .cards-kpi:hover{transform:none!important}
-#cards .credit-card{transform:none!important}
-#cards .credit-card:hover{transform:none!important}
-#ccFuturePortalV255{pointer-events:none!important}
-</style>
-<script id="novasol-v533-cards-popover-stability-script">
-(()=>{
- const cards=document.getElementById('cards');
- if(!cards)return;
-
- function placeKpi(card,pop){
-   const r=card.getBoundingClientRect(),gap=8,safeTop=88,safeBottom=12,safeSide=12;
-   const w=Math.max(220,Math.min(Math.round(r.width),innerWidth-safeSide*2));
-   pop.style.width=w+'px';
-   const h=Math.min(pop.scrollHeight||pop.offsetHeight||150,Math.max(140,innerHeight-safeTop-safeBottom-20));
-   const below=innerHeight-r.bottom-safeBottom,above=r.top-safeTop;
-   const openUp=below<h+gap&&above>below;
-   const top=openUp?Math.max(safeTop,r.top-h-gap):Math.min(innerHeight-h-safeBottom,r.bottom+gap);
-   const left=Math.max(safeSide,Math.min(innerWidth-w-safeSide,r.left+(r.width-w)/2));
-   pop.style.left=left+'px';pop.style.top=top+'px';
-   pop.style.setProperty('--kpi-arrow-left',Math.max(22,Math.min(w-22,(r.left+r.width/2)-left))+'px');
-   pop.dataset.placement=openUp?'up':'down';
- }
- function bindKpis(){
-   cards.querySelectorAll('.cards-kpi').forEach(card=>{
-     if(card.dataset.popStableV533)return;card.dataset.popStableV533='1';
-     const pop=card.querySelector('.cards-kpi-pop');if(!pop)return;
-     card.addEventListener('mouseenter',()=>requestAnimationFrame(()=>placeKpi(card,pop)));
-   });
- }
- bindKpis();
- const sum=document.getElementById('cardsSummaryDynamic');
- if(sum)new MutationObserver(bindKpis).observe(sum,{childList:true,subtree:true});
- window.addEventListener('scroll',()=>{
-   document.querySelectorAll('#cards .cards-kpi .cards-kpi-pop').forEach(p=>{p.style.left='';p.style.top=''});
- },true);
-})();
-</script>
-
 <style id="novasol-v534-cards-popover-exclusive">
 /* Build 534 — somente um popover de Cartões pode permanecer visível. */
 #cards .cards-kpi .cards-kpi-pop{pointer-events:none!important}
@@ -2412,76 +2370,48 @@ input.search, .search::placeholder, input::placeholder, textarea::placeholder{fo
 })();
 </script>
 
-<style id="novasol-v535-kpi-popover-portal-style">
-#cardsKpiPortalV535{position:fixed;z-index:1200;box-sizing:border-box;padding:9px 10px;border:1px solid #31516b;border-radius:10px;background:linear-gradient(180deg,#0b2032 0%,#081a29 100%);box-shadow:0 16px 34px rgba(0,0,0,.34);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .1s ease,visibility .1s ease;color:#eaf4fb;overflow:auto}
-#cardsKpiPortalV535.open{opacity:1;visibility:visible}
-#cardsKpiPortalV535 h4{margin:0 0 5px;padding-bottom:5px;border-bottom:1px solid rgba(71,105,132,.34);font-size:11px;line-height:1.25}
-#cardsKpiPortalV535 .cards-pop-line{font-size:10px}
+
+<style id="novasol-v537-kpi-popover-controller-style">
 #cards .cards-kpi .cards-kpi-pop{display:none!important}
+#cardsKpiPortalV537{position:fixed;z-index:1300;box-sizing:border-box;padding:9px 10px;border:1px solid #31516b;border-radius:10px;background:linear-gradient(180deg,#0b2032 0%,#081a29 100%);box-shadow:0 16px 34px rgba(0,0,0,.34);color:#eaf4fb;opacity:0;visibility:hidden;pointer-events:none;overflow:auto;transition:opacity .1s ease,visibility .1s ease}
+#cardsKpiPortalV537.open{opacity:1;visibility:visible}
+#cardsKpiPortalV537 h4{margin:0 0 5px;padding-bottom:5px;border-bottom:1px solid rgba(71,105,132,.34);font-size:11px;line-height:1.25}
+#cardsKpiPortalV537 .cards-pop-line{font-size:10px}
 </style>
-<script id="novasol-v535-kpi-popover-portal-script">
-(()=>{
- let portal=document.getElementById('cardsKpiPortalV535');
- if(!portal){portal=document.createElement('div');portal.id='cardsKpiPortalV535';document.body.appendChild(portal)}
+<script id="novasol-v537-kpi-popover-controller-script">
+document.addEventListener('DOMContentLoaded',()=>{
+ let portal=document.getElementById('cardsKpiPortalV537');
+ if(!portal){portal=document.createElement('div');portal.id='cardsKpiPortalV537';document.body.appendChild(portal)}
  let active=null;
- function hide(){portal.classList.remove('open');active=null}
- function show(card){
+ const hide=()=>{portal.classList.remove('open');active=null};
+ const show=(card)=>{
    const src=card.querySelector('.cards-kpi-pop');if(!src)return;
    active=card;portal.innerHTML=src.innerHTML;
-   const r=card.getBoundingClientRect(),gap=8,safeTop=145,safeBottom=12,safeSide=12;
+   const r=card.getBoundingClientRect(),gap=8,safeSide=12,safeTop=145,safeBottom=12;
    const w=Math.max(220,Math.min(Math.round(r.width),innerWidth-safeSide*2));
-   portal.style.width=w+'px';portal.style.maxHeight='none';
-   portal.style.left='-9999px';portal.style.top='-9999px';portal.classList.add('open');
+   portal.style.width=w+'px';portal.style.maxHeight=Math.max(140,innerHeight-safeTop-safeBottom-20)+'px';
+   portal.style.left='0px';portal.style.top='0px';portal.classList.add('open');
    const h=Math.min(portal.scrollHeight||150,Math.max(140,innerHeight-safeTop-safeBottom-20));
-   portal.style.maxHeight=Math.max(140,innerHeight-safeTop-safeBottom-20)+'px';
    const below=innerHeight-r.bottom-safeBottom,above=r.top-safeTop;
    const top=(below>=h+gap||below>=above)?r.bottom+gap:Math.max(safeTop,r.top-h-gap);
-   const left=Math.max(safeSide,Math.min(innerWidth-w-safeSide,r.left+(r.width-w)/2));
-   portal.style.left=left+'px';portal.style.top=Math.min(innerHeight-h-safeBottom,top)+'px';
- }
- function bind(){
-   document.querySelectorAll('#cards .cards-kpi').forEach(card=>{
-     if(card.dataset.kpiPortalV535)return;card.dataset.kpiPortalV535='1';
+   portal.style.left=Math.max(safeSide,Math.min(innerWidth-w-safeSide,r.left+(r.width-w)/2))+'px';
+   portal.style.top=Math.max(safeTop,Math.min(innerHeight-h-safeBottom,top))+'px';
+ };
+ const bind=()=>{
+   document.querySelectorAll('#cardsSummaryDynamic .cards-kpi').forEach(card=>{
+     if(card.dataset.kpiV537)return;
+     card.dataset.kpiV537='1';
      card.addEventListener('mouseenter',()=>show(card));
      card.addEventListener('mouseleave',hide);
-     card.addEventListener('focusin',()=>show(card));
-     card.addEventListener('focusout',hide);
    });
- }
+ };
  bind();
  const host=document.getElementById('cardsSummaryDynamic');
- if(host)new MutationObserver(()=>setTimeout(bind,0)).observe(host,{childList:true,subtree:true});
+ if(host)new MutationObserver(()=>requestAnimationFrame(bind)).observe(host,{childList:true,subtree:true});
  document.addEventListener('mouseover',e=>{if(e.target.closest?.('#cards .credit-card'))hide()},true);
- window.addEventListener('scroll',hide,true);window.addEventListener('resize',()=>active?show(active):hide());
-})();
-</script>
-
-<style id="novasol-v536-kpi-popover-fix">
-#cardsKpiPortalV535{display:block!important}
-</style>
-<script id="novasol-v536-kpi-popover-fix-script">
-(()=>{
- const portal=document.getElementById('cardsKpiPortalV535');if(!portal)return;
- function bind(){
-  document.querySelectorAll('#cardsSummaryDynamic .cards-kpi').forEach(card=>{
-   if(card.dataset.kpiPortalV536)return;card.dataset.kpiPortalV536='1';
-   const src=card.querySelector('.cards-kpi-pop');if(!src)return;
-   const hide=()=>portal.classList.remove('open');
-   const show=()=>{
-    portal.innerHTML=src.innerHTML;portal.classList.add('open');
-    const r=card.getBoundingClientRect(),gap=8,safe=12,w=Math.max(220,Math.min(Math.round(r.width),innerWidth-safe*2));
-    portal.style.width=w+'px';portal.style.maxHeight='none';portal.style.left='0px';portal.style.top='0px';
-    const h=Math.min(portal.scrollHeight||150,Math.max(140,innerHeight-170));
-    const below=innerHeight-r.bottom-safe,above=r.top-145;
-    const top=(below>=h+gap||below>=above)?r.bottom+gap:Math.max(145,r.top-h-gap);
-    portal.style.left=Math.max(safe,Math.min(innerWidth-w-safe,r.left+(r.width-w)/2))+'px';
-    portal.style.top=Math.max(145,Math.min(innerHeight-h-safe,top))+'px';
-   };
-   card.addEventListener('mouseenter',show);card.addEventListener('mouseleave',hide);
-  });
- }
- bind();const host=document.getElementById('cardsSummaryDynamic');if(host)new MutationObserver(bind).observe(host,{childList:true,subtree:true});
-})();
+ window.addEventListener('scroll',hide,true);
+ window.addEventListener('resize',()=>active?show(active):hide());
+});
 </script>
 </head>
 <body>
