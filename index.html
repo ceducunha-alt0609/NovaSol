@@ -2411,6 +2411,50 @@ input.search, .search::placeholder, input::placeholder, textarea::placeholder{fo
  window.addEventListener('scroll',()=>{hidePortal();hideKpis();setTimeout(restoreKpis,0)},true);
 })();
 </script>
+
+<style id="novasol-v535-kpi-popover-portal-style">
+#cardsKpiPortalV535{position:fixed;z-index:1200;box-sizing:border-box;padding:9px 10px;border:1px solid #31516b;border-radius:10px;background:linear-gradient(180deg,#0b2032 0%,#081a29 100%);box-shadow:0 16px 34px rgba(0,0,0,.34);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .1s ease,visibility .1s ease;color:#eaf4fb;overflow:auto}
+#cardsKpiPortalV535.open{opacity:1;visibility:visible}
+#cardsKpiPortalV535 h4{margin:0 0 5px;padding-bottom:5px;border-bottom:1px solid rgba(71,105,132,.34);font-size:11px;line-height:1.25}
+#cardsKpiPortalV535 .cards-pop-line{font-size:10px}
+#cards .cards-kpi .cards-kpi-pop{display:none!important}
+</style>
+<script id="novasol-v535-kpi-popover-portal-script">
+(()=>{
+ let portal=document.getElementById('cardsKpiPortalV535');
+ if(!portal){portal=document.createElement('div');portal.id='cardsKpiPortalV535';document.body.appendChild(portal)}
+ let active=null;
+ function hide(){portal.classList.remove('open');active=null}
+ function show(card){
+   const src=card.querySelector('.cards-kpi-pop');if(!src)return;
+   active=card;portal.innerHTML=src.innerHTML;
+   const r=card.getBoundingClientRect(),gap=8,safeTop=145,safeBottom=12,safeSide=12;
+   const w=Math.max(220,Math.min(Math.round(r.width),innerWidth-safeSide*2));
+   portal.style.width=w+'px';portal.style.maxHeight='none';
+   portal.style.left='-9999px';portal.style.top='-9999px';portal.classList.add('open');
+   const h=Math.min(portal.scrollHeight||150,Math.max(140,innerHeight-safeTop-safeBottom-20));
+   portal.style.maxHeight=Math.max(140,innerHeight-safeTop-safeBottom-20)+'px';
+   const below=innerHeight-r.bottom-safeBottom,above=r.top-safeTop;
+   const top=(below>=h+gap||below>=above)?r.bottom+gap:Math.max(safeTop,r.top-h-gap);
+   const left=Math.max(safeSide,Math.min(innerWidth-w-safeSide,r.left+(r.width-w)/2));
+   portal.style.left=left+'px';portal.style.top=Math.min(innerHeight-h-safeBottom,top)+'px';
+ }
+ function bind(){
+   document.querySelectorAll('#cards .cards-kpi').forEach(card=>{
+     if(card.dataset.kpiPortalV535)return;card.dataset.kpiPortalV535='1';
+     card.addEventListener('mouseenter',()=>show(card));
+     card.addEventListener('mouseleave',hide);
+     card.addEventListener('focusin',()=>show(card));
+     card.addEventListener('focusout',hide);
+   });
+ }
+ bind();
+ const host=document.getElementById('cardsSummaryDynamic');
+ if(host)new MutationObserver(()=>setTimeout(bind,0)).observe(host,{childList:true,subtree:true});
+ document.addEventListener('mouseover',e=>{if(e.target.closest?.('#cards .credit-card'))hide()},true);
+ window.addEventListener('scroll',hide,true);window.addEventListener('resize',()=>active?show(active):hide());
+})();
+</script>
 </head>
 <body>
 <span id="novasolMerriweatherWarmupV305" aria-hidden="true">NovaSol</span><div class="app">
