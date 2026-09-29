@@ -2398,6 +2398,44 @@ document.addEventListener('DOMContentLoaded',()=>{
  window.addEventListener('hashchange',sync);
 });
 </script>
+
+<style id="novasol-v540-card-popover-hard-dismiss">
+/* Build 540 — portal do cartão nunca sobrevive fora da interação atual/tela Cartões. */
+body:not(.cards-popover-page-v540) #ccFuturePortalV255{display:none!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+</style>
+<script id="novasol-v540-card-popover-hard-dismiss-script">
+document.addEventListener('DOMContentLoaded',()=>{
+ const portal=()=>document.getElementById('ccFuturePortalV255');
+ const cards=()=>document.getElementById('cards');
+ const cardUnderPointer=()=>document.querySelector('#cards .credit-card:hover');
+ const close=()=>{const p=portal();if(!p)return;p.classList.remove('open');p.style.opacity='';p.style.visibility='';};
+ const sync=()=>{
+  const c=cards(),visible=!!c&&getComputedStyle(c).display!=='none';
+  document.body.classList.toggle('cards-popover-page-v540',visible);
+  if(!visible)close();
+ };
+ document.addEventListener('pointermove',e=>{
+  const c=cards(),visible=!!c&&getComputedStyle(c).display!=='none';
+  if(!visible){close();return}
+  const card=e.target.closest?.('#cards .credit-card');
+  const p=e.target.closest?.('#ccFuturePortalV255');
+  if(!card&&!p)close();
+ },true);
+ document.addEventListener('pointerover',e=>{
+  if(e.target.closest?.('#cards .cards-kpi'))close();
+ },true);
+ document.addEventListener('click',e=>{
+  const nav=e.target.closest?.('[data-page]');
+  if(nav&&nav.dataset.page!=='cards'){close();document.body.classList.remove('cards-popover-page-v540')}
+ },true);
+ window.addEventListener('scroll',close,true);
+ window.addEventListener('blur',close);
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)close()});
+ const app=document.querySelector('.app');
+ if(app)new MutationObserver(sync).observe(app,{subtree:true,attributes:true,attributeFilter:['class','style']});
+ sync();
+});
+</script>
 </head>
 <body>
 <span id="novasolMerriweatherWarmupV305" aria-hidden="true">NovaSol</span><div class="app">
