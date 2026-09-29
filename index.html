@@ -2455,6 +2455,34 @@ input.search, .search::placeholder, input::placeholder, textarea::placeholder{fo
  window.addEventListener('scroll',hide,true);window.addEventListener('resize',()=>active?show(active):hide());
 })();
 </script>
+
+<style id="novasol-v536-kpi-popover-fix">
+#cardsKpiPortalV535{display:block!important}
+</style>
+<script id="novasol-v536-kpi-popover-fix-script">
+(()=>{
+ const portal=document.getElementById('cardsKpiPortalV535');if(!portal)return;
+ function bind(){
+  document.querySelectorAll('#cardsSummaryDynamic .cards-kpi').forEach(card=>{
+   if(card.dataset.kpiPortalV536)return;card.dataset.kpiPortalV536='1';
+   const src=card.querySelector('.cards-kpi-pop');if(!src)return;
+   const hide=()=>portal.classList.remove('open');
+   const show=()=>{
+    portal.innerHTML=src.innerHTML;portal.classList.add('open');
+    const r=card.getBoundingClientRect(),gap=8,safe=12,w=Math.max(220,Math.min(Math.round(r.width),innerWidth-safe*2));
+    portal.style.width=w+'px';portal.style.maxHeight='none';portal.style.left='0px';portal.style.top='0px';
+    const h=Math.min(portal.scrollHeight||150,Math.max(140,innerHeight-170));
+    const below=innerHeight-r.bottom-safe,above=r.top-145;
+    const top=(below>=h+gap||below>=above)?r.bottom+gap:Math.max(145,r.top-h-gap);
+    portal.style.left=Math.max(safe,Math.min(innerWidth-w-safe,r.left+(r.width-w)/2))+'px';
+    portal.style.top=Math.max(145,Math.min(innerHeight-h-safe,top))+'px';
+   };
+   card.addEventListener('mouseenter',show);card.addEventListener('mouseleave',hide);
+  });
+ }
+ bind();const host=document.getElementById('cardsSummaryDynamic');if(host)new MutationObserver(bind).observe(host,{childList:true,subtree:true});
+})();
+</script>
 </head>
 <body>
 <span id="novasolMerriweatherWarmupV305" aria-hidden="true">NovaSol</span><div class="app">
