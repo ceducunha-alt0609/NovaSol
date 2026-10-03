@@ -2437,52 +2437,99 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 </script>
 
-<style id="novasol-v541-kpi-popover-visual-refine">
-/* Build 541 — somente apresentação dos popovers dos 4 KPIs de Cartões. */
+<style id="novasol-v542-kpi-popover-visual-refine">
+/* Build 542 — somente apresentação: separação clara entre rótulos e valores nos 4 popovers de KPIs de Cartões. */
 #cardsKpiPortalV538{
- width:auto!important;
- min-width:220px!important;
- max-width:260px!important;
- padding:8px 10px!important;
+ width:250px!important;
+ min-width:240px!important;
+ max-width:calc(100vw - 24px)!important;
+ padding:9px 11px!important;
  border-radius:9px!important;
  overflow:hidden!important;
  font-size:10px!important;
- line-height:1.3!important;
+ line-height:1.32!important;
 }
 #cardsKpiPortalV538 h4{
- margin:0 0 6px!important;
+ margin:0 0 7px!important;
  padding:0 0 6px!important;
+ border-bottom:1px solid rgba(71,105,132,.34)!important;
  font-size:11px!important;
  line-height:1.25!important;
- font-weight:600!important;
+ font-weight:650!important;
+}
+#cardsKpiPortalV538 .cards-pop-card{
+ padding:5px 0!important;
+ border-bottom:1px solid rgba(49,81,107,.38)!important;
+}
+#cardsKpiPortalV538 .cards-pop-card:last-of-type{border-bottom:0!important}
+#cardsKpiPortalV538 .cards-pop-line,
+#cardsKpiPortalV538 .cards-pop-card-title,
+#cardsKpiPortalV538 .cards-pop-mini,
+#cardsKpiPortalV538 .cards-pop-total,
+#cardsKpiPortalV538 .cards-pop-grand{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) auto!important;
+ align-items:baseline!important;
+ column-gap:16px!important;
+ margin-left:0!important;
+ margin-right:0!important;
 }
 #cardsKpiPortalV538 .cards-pop-line{
- display:flex!important;
- align-items:baseline!important;
- justify-content:space-between!important;
- gap:12px!important;
- margin:0!important;
- padding:2px 0!important;
+ padding:3px 0!important;
+ border-bottom:1px solid rgba(49,81,107,.30)!important;
+ font-size:10px!important;
+ line-height:1.32!important;
+}
+#cardsKpiPortalV538 .cards-pop-card-title{
+ margin-bottom:4px!important;
  font-size:10px!important;
  line-height:1.3!important;
- font-weight:400!important;
 }
-#cardsKpiPortalV538 .cards-pop-line>span:first-child,
-#cardsKpiPortalV538 .cards-pop-line>small:first-child{
+#cardsKpiPortalV538 .cards-pop-mini{
+ padding:2px 0!important;
+ font-size:9.5px!important;
+ line-height:1.3!important;
+}
+#cardsKpiPortalV538 .cards-pop-total{
+ padding:5px 0!important;
+ border-top:1px solid rgba(49,81,107,.38)!important;
+ font-size:10px!important;
+ line-height:1.3!important;
+}
+#cardsKpiPortalV538 .cards-pop-grand{
+ margin-top:5px!important;
+ padding:6px 8px!important;
+ border:1px solid #31516b!important;
+ border-radius:8px!important;
+ background:#0d2234!important;
+}
+#cardsKpiPortalV538 .cards-pop-line>span,
+#cardsKpiPortalV538 .cards-pop-card-title>span,
+#cardsKpiPortalV538 .cards-pop-mini>span,
+#cardsKpiPortalV538 .cards-pop-total>span,
+#cardsKpiPortalV538 .cards-pop-grand>span{
  min-width:0!important;
- font-size:10px!important;
- font-weight:400!important;
- opacity:.82!important;
+ margin:0!important;
+ text-align:left!important;
 }
-#cardsKpiPortalV538 .cards-pop-line>span:last-child,
 #cardsKpiPortalV538 .cards-pop-line>b,
-#cardsKpiPortalV538 .cards-pop-line>strong{
- margin-left:auto!important;
+#cardsKpiPortalV538 .cards-pop-card-title>b,
+#cardsKpiPortalV538 .cards-pop-mini>b,
+#cardsKpiPortalV538 .cards-pop-total>b,
+#cardsKpiPortalV538 .cards-pop-grand>strong{
+ margin:0!important;
  white-space:nowrap!important;
- font-size:10px!important;
- font-weight:700!important;
+ text-align:right!important;
+ justify-self:end!important;
 }
-#cardsKpiPortalV538 small{font-size:9px!important;line-height:1.3!important}
+#cardsKpiPortalV538 .cards-pop-card-title>span{font-weight:650!important}
+#cardsKpiPortalV538 .cards-pop-line>b,
+#cardsKpiPortalV538 .cards-pop-card-title>b,
+#cardsKpiPortalV538 .cards-pop-total>b{font-size:10px!important;font-weight:700!important}
+#cardsKpiPortalV538 .cards-pop-mini>b{font-size:9.5px!important;font-weight:700!important}
+#cardsKpiPortalV538 .cards-pop-grand>span{font-size:9.5px!important}
+#cardsKpiPortalV538 .cards-pop-grand>strong{font-size:11px!important;font-weight:750!important}
+#cardsKpiPortalV538 .cards-pop-empty{font-size:9px!important;line-height:1.35!important}
 </style>
 </head>
 <body>
