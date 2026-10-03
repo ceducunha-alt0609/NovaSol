@@ -2368,6 +2368,15 @@ document.addEventListener('DOMContentLoaded',()=>{
    const card=e.target.closest('.cards-kpi');if(!card||card!==active||card.contains(e.relatedTarget))return;
    hide();
  });
+ document.addEventListener('pointermove',e=>{
+   if(active && !active.contains(e.target))hide();
+ },true);
+ document.addEventListener('pointerdown',e=>{
+   if(active && !e.target.closest?.('.cards-kpi'))hide();
+ },true);
+ document.addEventListener('click',e=>{
+   if(active && !e.target.closest?.('.cards-kpi'))hide();
+ },true);
  document.addEventListener('pointerover',e=>{if(e.target.closest?.('#cards .credit-card'))hide()},true);
  window.addEventListener('scroll',hide,true);
  window.addEventListener('resize',()=>active?show(active):hide());
