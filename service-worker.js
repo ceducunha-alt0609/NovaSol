@@ -1,6 +1,6 @@
-const CACHE='novasol-v1.0-build541-pwa65';
+const CACHE='novasol-v1.0-build542-pwa66';
 const BASE='/NovaSol/';
-const SHELL=[BASE,BASE+'index.html',BASE+'manifest.json',BASE+'firebase-config.js?v=541',BASE+'firebase-bridge.js?v=541',BASE+'icons/icon-192.png',BASE+'icons/icon-512.png'];
+const SHELL=[BASE,BASE+'index.html',BASE+'manifest.json',BASE+'firebase-config.js?v=542',BASE+'firebase-bridge.js?v=542',BASE+'icons/icon-192.png',BASE+'icons/icon-512.png'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)));
